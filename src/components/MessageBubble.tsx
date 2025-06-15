@@ -64,7 +64,6 @@ export default function MessageBubble({
           )}
         </div>
       </div>
-      {/* Timestamp and Copy button OUTSIDE the bubble */}
       {(timestamp || true) && (
         <div
           className={cn(
@@ -73,31 +72,59 @@ export default function MessageBubble({
           )}
           style={{ minHeight: "16px" }}
         >
-          {timestamp && (
-            <span
-              className={cn(
-                "text-[11px]",
-                isUser
-                  ? "text-right text-zinc-400"
-                  : "text-left text-zinc-500 dark:text-zinc-400"
+          {isUser ? (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopy}
+                className={cn(
+                  "h-6 w-6 ml-0 mr-1 px-0 py-0 opacity-0 group-hover:opacity-90 group-focus-within:opacity-90 transition-opacity"
+                )}
+                tabIndex={-1}
+                aria-label="Copy message"
+              >
+                {copied ? <CopyCheck size={12} /> : <Copy size={12} />}
+              </Button>
+              {timestamp && (
+                <span
+                  className={cn(
+                    "text-[11px]",
+                    "text-right text-zinc-400"
+                  )}
+                  style={{ lineHeight: "1" }}
+                >
+                  {timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
               )}
-              style={{ lineHeight: "1" }}
-            >
-              {timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </span>
+            </>
+          ) : (
+            <>
+              {timestamp && (
+                <span
+                  className={cn(
+                    "text-[11px]",
+                    "text-left text-zinc-500 dark:text-zinc-400"
+                  )}
+                  style={{ lineHeight: "1" }}
+                >
+                  {timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopy}
+                className={cn(
+                  "h-6 w-6 ml-1 px-0 py-0 opacity-0 group-hover:opacity-90 group-focus-within:opacity-90 transition-opacity"
+                )}
+                tabIndex={-1}
+                aria-label="Copy message"
+              >
+                {copied ? <CopyCheck size={12} /> : <Copy size={12} />}
+              </Button>
+            </>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCopy}
-            className={cn(
-              "h-6 w-6 ml-1 px-0 py-0 opacity-0 group-hover:opacity-90 group-focus-within:opacity-90 transition-opacity"
-            )}
-            tabIndex={-1}
-            aria-label="Copy message"
-          >
-            {copied ? <CopyCheck size={12} /> : <Copy size={12} />}
-          </Button>
         </div>
       )}
     </div>
