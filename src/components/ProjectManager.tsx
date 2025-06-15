@@ -78,18 +78,19 @@ export default function ProjectManager({
 
   return (
     <div className="space-y-2">
-      {/* New Chat Button */}
+      {/* New Project Form - Now at the top */}
+      <NewProjectForm onCreateProject={onCreateProject} />
+
+      {/* New Chat Button - Now below New Project */}
       <Button
         onClick={() => onCreateChat()}
         className="w-full justify-start gap-2 mb-4"
-        variant="outline"
+        variant="ghost"
+        size="sm"
       >
         <Plus size={16} />
         New Chat
       </Button>
-
-      {/* New Project Form */}
-      <NewProjectForm onCreateProject={onCreateProject} />
 
       {/* Projects */}
       {projects.map((project) => {
