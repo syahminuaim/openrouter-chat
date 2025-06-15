@@ -341,7 +341,7 @@ export default function Index() {
                       e.preventDefault();
                       handleSendMessage();
                     }
-                  }} placeholder="Message ChatGPT..." className="pr-12 resize-none border-2 focus:border-primary/50" disabled={loading} />
+                  }} placeholder="Message Assistant..." className="pr-12 resize-none border-2 focus:border-primary/50" disabled={loading} />
                     <Button onClick={handleSendMessage} disabled={!input.trim() || loading} size="sm" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0">
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </Button>
