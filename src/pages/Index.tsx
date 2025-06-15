@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Send, Loader2, Menu } from "lucide-react";
-import MessageBubble from "@/components/MessageBubble";
-import ProjectManager from "@/components/ProjectManager";
-import Settings from "@/components/Settings";
-import ModelSelect from "@/components/ModelSelect";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import SidebarLayout from "@/components/SidebarLayout";
+import ChatHeader from "@/components/ChatHeader";
+import ChatMessages from "@/components/ChatMessages";
+import ChatInput from "@/components/ChatInput";
 import { fetchOpenRouterChat, OpenRouterMessage } from "@/lib/openrouter";
 import { useToast } from "@/hooks/use-toast";
+
 interface Project {
   id: string;
   name: string;
@@ -21,7 +18,7 @@ interface Chat {
   projectId?: string;
   messages: OpenRouterMessage[];
   timestamp: Date;
-  model?: string; // Add model field to Chat interface
+  model?: string;
 }
 function generateId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -265,93 +262,60 @@ export default function Index() {
       setStreamingText(null);
     }
   };
-  return <SidebarProvider>
+  return (
+    <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
-        <Sidebar className="border-r">
-          <SidebarHeader className="p-4 border-b">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-lg">XXX</h2>
-              <Settings apiKey={apiKey} onApiKeyChange={setApiKey} model={defaultModel} onModelChange={setDefaultModel} theme={theme} onThemeChange={setTheme} />
-            </div>
-          </SidebarHeader>
-          
-          <SidebarContent className="p-4">
-            <ProjectManager projects={projects} chats={chats} activeChatId={activeChatId} onCreateProject={handleCreateProject} onToggleProject={handleToggleProject} onRenameProject={handleRenameProject} onDeleteProject={handleDeleteProject} onSelectChat={handleSelectChat} onCreateChat={handleCreateChat} onRenameChat={handleRenameChat} onDeleteChat={handleDeleteChat} onMoveChatToProject={handleMoveChatToProject} />
-          </SidebarContent>
-          
-          <SidebarFooter className="p-4 border-t">
-            <div className="text-xs text-muted-foreground">Powered by Dato Zubair</div>
-          </SidebarFooter>
-        </Sidebar>
+        <SidebarLayout
+          projects={projects}
+          chats={chats}
+          activeChatId={activeChatId}
+          onCreateProject={handleCreateProject}
+          onToggleProject={handleToggleProject}
+          onRenameProject={handleRenameProject}
+          onDeleteProject={handleDeleteProject}
+          onSelectChat={handleSelectChat}
+          onCreateChat={handleCreateChat}
+          onRenameChat={handleRenameChat}
+          onDeleteChat={handleDeleteChat}
+          onMoveChatToProject={handleMoveChatToProject}
+          apiKey={apiKey}
+          onApiKeyChange={setApiKey}
+          model={defaultModel}
+          onModelChange={setDefaultModel}
+          theme={theme}
+          onThemeChange={setTheme}
+        />
 
         {/* Main Content */}
         <SidebarInset className="flex-1">
           <div className="flex flex-col h-screen">
             {/* Header */}
-            <header className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <h1 className="font-semibold">
-                  {activeChat?.name || "New Chat"}
-                </h1>
-              </div>
-              <div className="flex items-center gap-4">
-                {activeChat && <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Model:</span>
-                    <ModelSelect value={currentModel} onChange={handleUpdateChatModel} compact={true} />
-                  </div>}
-                <div className="text-sm text-muted-foreground">
-                  {currentModel.split("/").pop()?.split("-")[0]?.toUpperCase() || "GPT"}
-                </div>
-              </div>
-            </header>
+            <ChatHeader
+              chatName={activeChat?.name || "New Chat"}
+              model={currentModel}
+              onModelChange={activeChat ? handleUpdateChatModel : undefined}
+              showModelSelect={!!activeChat}
+            />
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto">
-              {!activeChat || activeChat.messages.length === 0 ? <div className="flex items-center justify-center h-full">
-                  <div className="text-center space-y-4 max-w-md">
-                    <h2 className="text-2xl font-bold">How can I help you today?</h2>
-                    <p className="text-muted-foreground">
-                      Start a conversation with AI assistant
-                    </p>
-                  </div>
-                </div> : <div className="space-y-0">
-                  {activeChat.messages.map((message, index) => <MessageBubble key={index} role={message.role} content={message.content} timestamp={new Date()} />)}
-                  {streamingText && <MessageBubble role="assistant" content={streamingText} streaming={true} />}
-                  {loading && !streamingText && <div className="flex gap-4 px-4 py-6">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                        <Loader2 className="w-4 h-4 text-white animate-spin" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-muted-foreground mb-2">Assistant</div>
-                        <div className="text-muted-foreground">Thinking...</div>
-                      </div>
-                    </div>}
-                </div>}
-            </div>
+            <ChatMessages
+              messages={activeChat?.messages || []}
+              streamingText={streamingText}
+              loading={loading}
+            />
 
             {/* Input */}
-            <div className="border-t bg-background p-4">
-              <div className="max-w-4xl mx-auto">
-                <div className="flex gap-3 items-end">
-                  <div className="flex-1 relative">
-                    <Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }} placeholder="Message Assistant..." className="pr-12 resize-none border-2 focus:border-primary/50" disabled={loading} />
-                    <Button onClick={handleSendMessage} disabled={!input.trim() || loading} size="sm" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0">
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-2 text-center">Get a life bro.</div>
-              </div>
-            </div>
+            <ChatInput
+              value={input}
+              onChange={setInput}
+              onSend={handleSendMessage}
+              disabled={loading}
+              loading={loading}
+            />
           </div>
         </SidebarInset>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 }
