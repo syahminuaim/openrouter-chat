@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";
@@ -32,7 +33,8 @@ export default function ChatInput({
                 }
               }}
               placeholder="Message Assistant..."
-              className="pr-12 resize-none border-2"
+              // Override border and focus ring to match screenshot: single line, same on focus
+              className="pr-12 border border-[#232a35] focus:outline-none focus:border-[#232a35] focus:ring-0 shadow-none rounded-xl text-[16px]"
               disabled={disabled}
             />
             <Button
@@ -50,3 +52,4 @@ export default function ChatInput({
     </div>
   );
 }
+
