@@ -61,8 +61,8 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
             ) : undefined}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[300px] w-[400px] p-0">
-          <div className="sticky top-0 z-10">
+        <SelectContent className="max-h-[300px] w-[400px] p-0 overflow-hidden">
+          <div className="sticky top-0 z-20 bg-popover border-b border-border">
             <ModelSearch value={search} onChange={setSearch} />
           </div>
           <div className="max-h-[250px] overflow-y-auto">
