@@ -111,10 +111,11 @@ export default function Index() {
     } : chat));
     try {
       // Get updated messages for API call
+      // --- FIX: Ensure we fetch the up-to-date chat after scheduling setChats above
       const updatedChat = chats.find(c => c.id === targetChatId);
-      const messages = updatedChat ? [...updatedChat.messages, userMessage] : [userMessage];
+      const previousMessages = updatedChat ? [...updatedChat.messages, userMessage] : [userMessage];
       const modelToUse = updatedChat?.model || defaultModel;
-      const response = await fetchOpenRouterChat(apiKey, messages, modelToUse);
+      const response = await fetchOpenRouterChat(apiKey, previousMessages, modelToUse);
 
       // Simulate streaming effect
       setStreamingText("");
@@ -126,14 +127,14 @@ export default function Index() {
       }
       setStreamingText(null);
 
-      // Add assistant message
+      // Add assistant message ONLY (do NOT re-add user message)
       const assistantMessage: OpenRouterMessage = {
         role: "assistant",
         content: response
       };
       setChats(prev => prev.map(chat => chat.id === targetChatId ? {
         ...chat,
-        messages: [...chat.messages, userMessage, assistantMessage],
+        messages: [...chat.messages, assistantMessage], // Only append assistant
         timestamp: new Date()
       } : chat));
     } catch (error) {
@@ -148,7 +149,7 @@ export default function Index() {
       };
       setChats(prev => prev.map(chat => chat.id === targetChatId ? {
         ...chat,
-        messages: [...chat.messages, userMessage, errorMessage],
+        messages: [...chat.messages, errorMessage], // Only append error message
         timestamp: new Date()
       } : chat));
     } finally {
