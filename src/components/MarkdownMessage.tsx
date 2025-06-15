@@ -1,12 +1,13 @@
 
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-tsx";
+import "prismjs/components/prism-python";
+import "prismjs/themes/prism.css";
+
 import React, { useRef, useEffect } from "react";
 import { marked } from "marked";
 import Prism from "prismjs";
-import "prismjs/components/prism-javascript";
-import "prismjs/components/prism-python";
-import "prismjs/components/prism-typescript";
-import "prismjs/components/prism-tsx";
-import "prismjs/themes/prism.css";
 import { Copy } from "lucide-react";
 
 type MarkdownMessageProps = {
@@ -35,9 +36,7 @@ function resolvePrismLanguage(rawLang: string | undefined | null) {
 
 // Custom renderer for Prism highlighting
 const renderer = new marked.Renderer();
-renderer.code = function (code, language, ...rest) {
-  // `marked` v15 renderer signature: (code: string, infoString?: string | undefined, escaped?: boolean | undefined, ...args: any[])
-  // We want language for Prism
+renderer.code = function (code, language) {
   const validLang = resolvePrismLanguage(language);
   const html = Prism.highlight(code, Prism.languages[validLang], validLang);
   return `<pre style="position: relative;"><code class="language-${validLang}">${html}</code></pre>`;
