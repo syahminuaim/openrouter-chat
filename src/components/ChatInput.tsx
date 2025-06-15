@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";
@@ -33,7 +32,7 @@ export default function ChatInput({
                 }
               }}
               placeholder="Message Assistant..."
-              className="pr-12 resize-none border-2 focus:border-primary/50"
+              className="pr-12 resize-none border-2"
               disabled={disabled}
             />
             <Button
