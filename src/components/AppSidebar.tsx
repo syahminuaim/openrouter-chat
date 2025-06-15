@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -10,7 +9,7 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Folder, FolderOpen, NewChat } from "lucide-react";
+import { Folder, FolderOpen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +56,7 @@ export function AppSidebar({
                   className="font-medium"
                   isActive={false}
                 >
-                  <NewChat className="mr-1" />
+                  <Plus className="mr-1" />
                   <span>New Chat</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
