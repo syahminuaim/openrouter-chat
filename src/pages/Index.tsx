@@ -9,6 +9,7 @@ import ProjectManager from "@/components/ProjectManager";
 import Settings from "@/components/Settings";
 import { fetchOpenRouterChat, OpenRouterMessage } from "@/lib/openrouter";
 import { useToast } from "@/hooks/use-toast";
+
 interface Project {
   id: string;
   name: string;
@@ -21,6 +22,7 @@ interface Chat {
   messages: OpenRouterMessage[];
   timestamp: Date;
 }
+
 function generateId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
@@ -43,6 +45,7 @@ function saveToStorage<T>(key: string, value: T) {
     console.error("Failed to save to localStorage:", error);
   }
 }
+
 export default function Index() {
   // Core state
   const [projects, setProjects] = useState<Project[]>(() => loadFromStorage("chatgpt-projects", []));
@@ -148,6 +151,15 @@ export default function Index() {
     }
   };
 
+  // New function to move chat to project
+  const handleMoveChatToProject = (chatId: string, projectId?: string) => {
+    setChats(prev => prev.map(chat => 
+      chat.id === chatId 
+        ? { ...chat, projectId } 
+        : chat
+    ));
+  };
+
   // Message handling
   const handleSendMessage = async () => {
     if (!input.trim() || loading || !apiKey) {
@@ -247,7 +259,20 @@ export default function Index() {
           </SidebarHeader>
           
           <SidebarContent className="p-4">
-            <ProjectManager projects={projects} chats={chats} activeChatId={activeChatId} onCreateProject={handleCreateProject} onToggleProject={handleToggleProject} onRenameProject={handleRenameProject} onDeleteProject={handleDeleteProject} onSelectChat={handleSelectChat} onCreateChat={handleCreateChat} onRenameChat={handleRenameChat} onDeleteChat={handleDeleteChat} />
+            <ProjectManager 
+              projects={projects} 
+              chats={chats} 
+              activeChatId={activeChatId} 
+              onCreateProject={handleCreateProject} 
+              onToggleProject={handleToggleProject} 
+              onRenameProject={handleRenameProject} 
+              onDeleteProject={handleDeleteProject} 
+              onSelectChat={handleSelectChat} 
+              onCreateChat={handleCreateChat} 
+              onRenameChat={handleRenameChat} 
+              onDeleteChat={handleDeleteChat}
+              onMoveChatToProject={handleMoveChatToProject}
+            />
           </SidebarContent>
           
           <SidebarFooter className="p-4 border-t">
