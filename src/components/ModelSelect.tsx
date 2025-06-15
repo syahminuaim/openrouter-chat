@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
@@ -314,46 +315,52 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
             {compact && selectedModel ? selectedModel.label : undefined}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
-          <div className="sticky top-0 z-10 bg-popover px-2 pb-2 pt-2">
-            <div className="relative">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search models..."
-                className={`
-                  bg-background text-sm pl-8
-                  border border-zinc-300
-                  focus:outline-none focus:ring-0 focus:border-zinc-300 !important
-                  focus:shadow-none !important
-                  shadow-none ring-0 transition
-                `}
-                style={{
-                  boxShadow: "none",
-                  borderColor: "#d4d4d8",
-                }}
-                autoFocus
-              />
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
+        <SelectContent className="max-h-96">
+          <div className="sticky top-0 z-20 bg-popover border-b border-border">
+            <div className="p-2">
+              <div className="relative">
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search models..."
+                  className={`
+                    bg-background text-sm pl-8
+                    border border-zinc-300
+                    focus:outline-none focus:ring-0 focus:border-zinc-300 !important
+                    focus:shadow-none !important
+                    shadow-none ring-0 transition
+                  `}
+                  style={{
+                    boxShadow: "none",
+                    borderColor: "#d4d4d8",
+                  }}
+                  autoFocus
+                />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
+              </div>
             </div>
           </div>
-          {Object.entries(groupedModels).map(([category, models]) => (
-            <SelectGroup key={category}>
-              <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
-                {category}
-              </div>
-              {models.map((model) => (
-                <SelectItem key={model.value} value={model.value}>
-                  {model.label}
-                </SelectItem>
+          <ScrollArea className="max-h-80">
+            <div className="p-1">
+              {Object.entries(groupedModels).map(([category, models]) => (
+                <SelectGroup key={category}>
+                  <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
+                    {category}
+                  </div>
+                  {models.map((model) => (
+                    <SelectItem key={model.value} value={model.value}>
+                      {model.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               ))}
-            </SelectGroup>
-          ))}
-          {filteredModels.length === 0 && (
-            <div className="p-3 text-muted-foreground text-sm text-center">
-              No models found.
+              {filteredModels.length === 0 && (
+                <div className="p-3 text-muted-foreground text-sm text-center">
+                  No models found.
+                </div>
+              )}
             </div>
-          )}
+          </ScrollArea>
         </SelectContent>
       </Select>
     </div>
