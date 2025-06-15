@@ -1,3 +1,4 @@
+
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import Settings from "@/components/Settings";
 import ProjectManager from "@/components/ProjectManager";
@@ -60,7 +61,7 @@ export default function SidebarLayout({
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="p-4 border-b">
-        <div className="flex items-center justify-between h-12">
+        <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg">XXX</h2>
           <Settings
             apiKey={apiKey}
