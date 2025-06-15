@@ -78,23 +78,37 @@ export default function ProjectManager({
 
   return (
     <div className="space-y-2">
+      {/* New Project Button (now on top and styled same as New Chat) */}
+      <Button
+        onClick={() => {
+          // Focus logic for NewProjectForm will trigger inside the form itself.
+          const evt = new CustomEvent("show:new-project-form");
+          window.dispatchEvent(evt);
+        }}
+        className="w-full justify-start gap-2"
+        variant="outline"
+      >
+        <Plus size={16} />
+        New Project
+      </Button>
+
+      {/* New Project Form - show only when triggered */}
+      <NewProjectForm onCreateProject={onCreateProject} />
+
       {/* New Chat Button */}
       <Button
         onClick={() => onCreateChat()}
-        className="w-full justify-start gap-2 mb-4"
+        className="w-full justify-start gap-2"
         variant="outline"
       >
         <Plus size={16} />
         New Chat
       </Button>
 
-      {/* New Project Form */}
-      <NewProjectForm onCreateProject={onCreateProject} />
-
       {/* Projects */}
       {projects.map((project) => {
         const projectChats = chats.filter(chat => chat.projectId === project.id);
-        
+
         return (
           <ProjectItem
             key={project.id}
