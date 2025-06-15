@@ -27,15 +27,13 @@ export default function MessageBubble({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // iMessage-like colors
+  // iMessage-like colors (shape for both is the same!)
   const userBg = "bg-[#007aff] text-white";
   const assistantBg =
     "bg-[#f1f0f0] dark:bg-[#23272d] text-black dark:text-white border border-[#e4e4e7] dark:border-[#353941]";
 
-  // Use the same bubble style for both, only change the color
+  // Bubble: Both use the same shape.
   const bubbleCommon = "rounded-3xl rounded-br-[8px] px-4 py-2 shadow-sm text-[14px] leading-normal transition-colors whitespace-pre-wrap break-words group";
-  // Odd "tail" for left-assistant: round the other side
-  const assistantBubbleFix = "rounded-3xl rounded-bl-[8px]"; // matches previous visual but you said to just copy, so use identical for now
 
   return (
     <div
@@ -51,8 +49,6 @@ export default function MessageBubble({
           isUser
             ? `${userBg} self-end ml-3`
             : `${assistantBg} self-start mr-3`,
-          // iMessage "tail" difference (commented out, use exactly same for now)
-          // !isUser && assistantBubbleFix,
           streaming && isUser && "opacity-75"
         )}
         style={{ minHeight: "1.9rem" }}
@@ -63,7 +59,7 @@ export default function MessageBubble({
             !isUser && "prose-px-0"
           )}
         >
-          {role === "user" ? (
+          {isUser ? (
             <div className="whitespace-pre-wrap break-words">{content}</div>
           ) : (
             <MarkdownMessage content={content} className="mb-0 pb-0" />
@@ -73,6 +69,7 @@ export default function MessageBubble({
           )}
         </div>
       </div>
+      {/* Timestamp and Copy button OUTSIDE the bubble */}
       {(timestamp || true) && (
         <div
           className={cn(
@@ -111,4 +108,3 @@ export default function MessageBubble({
     </div>
   );
 }
-
