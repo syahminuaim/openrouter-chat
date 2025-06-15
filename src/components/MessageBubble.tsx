@@ -12,13 +12,14 @@ interface MessageBubbleProps {
   timestamp?: Date;
 }
 
-export default function MessageBubble({ 
-  role, 
-  content, 
+export default function MessageBubble({
+  role,
+  content,
   streaming = false,
-  timestamp 
+  timestamp,
 }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
+  const isUser = role === "user";
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(content);
@@ -29,28 +30,38 @@ export default function MessageBubble({
   return (
     <div
       className={cn(
-        "group flex px-4 py-6 hover:bg-muted/30 transition-colors",
-        "gap-0" // No space for avatar
+        "w-full flex mb-2 px-2",
+        isUser ? "justify-end" : "justify-start"
       )}
     >
-      {/* Content */}
-      <div className="flex-1 min-w-0 space-y-2">
-        <div className="flex items-center justify-end">
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            {timestamp && (
-              <span className="text-xs text-muted-foreground">
-                {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
+      <div
+        className={cn(
+          // Bubble styles
+          "max-w-[80%] rounded-2xl px-4 py-2 shadow transition-colors break-words relative",
+          isUser
+            ? "bg-primary text-primary-foreground self-end ml-12" // right side, margin left for avatar area we don't show
+            : "bg-muted text-foreground self-start mr-12", // left side, margin right for avatar area we don't show
+          streaming && isUser && "opacity-75"
+        )}
+      >
+        <div className="flex items-center justify-between gap-2 mb-1">
+          {timestamp && (
+            <span className={cn("text-xs", isUser ? "text-primary-foreground/60" : "text-muted-foreground/60")}>
+              {timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCopy}
+            className={cn(
+              "h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity",
+              isUser ? "ml-2" : "mr-2"
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopy}
-              className="h-8 w-8 p-0"
-            >
-              {copied ? <CopyCheck size={14} /> : <Copy size={14} />}
-            </Button>
-          </div>
+            tabIndex={-1}
+          >
+            {copied ? <CopyCheck size={14} /> : <Copy size={14} />}
+          </Button>
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert">
           {role === "user" ? (
@@ -66,3 +77,4 @@ export default function MessageBubble({
     </div>
   );
 }
+
