@@ -27,36 +27,43 @@ export default function MessageBubble({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // iMessage-like colors
-  const userBg =
-    "bg-[#007aff] text-white"; // iOS blue
-  const userBubble =
-    "rounded-3xl rounded-br-[8px]"; // right tail
-  const assistantBg =
-    "bg-[#f1f0f0] dark:bg-[#23272d] text-black dark:text-white border border-[#e4e4e7] dark:border-[#353941]";
-  const assistantBubble =
-    "rounded-3xl rounded-bl-[8px]"; // left tail
+  // iMessage-like colors and bubbles
+  const userBg = "bg-[#007aff] text-white";
+  const userBubble = "rounded-3xl rounded-br-[8px]";
+  const assistantBg = "bg-[#f1f0f0] dark:bg-[#23272d] text-black dark:text-white border border-[#e4e4e7] dark:border-[#353941]";
+  const assistantBubble = "rounded-3xl rounded-bl-[8px]";
 
   return (
     <div
       className={cn(
-        "w-full flex mb-2 px-2 group",
+        "w-full flex px-2 group",
         isUser ? "justify-end" : "justify-start"
       )}
+      style={{ marginBottom: '0.1rem' }} // make bubble stack tighter
     >
       <div
         className={cn(
-          // Bubble styles, iMessage-like tweaks below:
-          "max-w-[48%] sm:max-w-[44%] px-3 py-1.5 text-[15px] relative transition-colors shadow-sm whitespace-pre-wrap break-words",
+          // Minimal padding & tight layout for "shorter" look
+          "max-w-[48%] sm:max-w-[44%] px-2 py-1 text-[14px] leading-normal relative transition-colors shadow-sm whitespace-pre-wrap break-words",
           isUser
-            ? `${userBg} ${userBubble} self-end ml-4`
-            : `${assistantBg} ${assistantBubble} self-start mr-4`,
+            ? `${userBg} ${userBubble} self-end ml-3`
+            : `${assistantBg} ${assistantBubble} self-start mr-3`,
           streaming && isUser && "opacity-75"
         )}
+        style={{ minHeight: '1.5rem' }}
       >
-        <div className="flex items-center justify-between gap-2 mb-1">
+        {/* Absolute timestamp/copy row overlays so doesn't add to bubble height */}
+        <div className={cn(
+          "absolute top-1 flex items-center gap-1",
+          isUser ? "right-2 flex-row-reverse" : "left-2"
+        )}
+        style={{ zIndex: 2 }}
+        >
           {timestamp && (
-            <span className={cn("text-xs", isUser ? "text-white/80" : "text-zinc-500 dark:text-zinc-400")}>
+            <span className={cn(
+              "text-[11px] leading-none px-1",
+              isUser ? "text-white/70" : "text-zinc-500 dark:text-zinc-400"
+            )}>
               {timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
@@ -65,15 +72,15 @@ export default function MessageBubble({
             size="sm"
             onClick={handleCopy}
             className={cn(
-              "h-8 w-8 p-0 opacity-0 group-hover:opacity-90 group-focus-within:opacity-90 transition-opacity",
-              isUser ? "ml-1" : "mr-1"
+              "h-6 w-6 p-0 opacity-0 group-hover:opacity-90 group-focus-within:opacity-90 transition-opacity",
+              isUser ? "mr-1" : "ml-1"
             )}
             tabIndex={-1}
           >
-            {copied ? <CopyCheck size={14} /> : <Copy size={14} />}
+            {copied ? <CopyCheck size={12} /> : <Copy size={12} />}
           </Button>
         </div>
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+        <div className="prose prose-sm max-w-none dark:prose-invert" style={{ marginTop: "0.7em" }}>
           {role === "user" ? (
             <div className="whitespace-pre-wrap break-words">{content}</div>
           ) : (
