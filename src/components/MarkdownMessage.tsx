@@ -13,10 +13,26 @@ type MarkdownMessageProps = {
   className?: string;
 };
 
+// Defensive Prism language resolver
+function resolvePrismLanguage(rawLang: string | undefined | null) {
+  if (!rawLang || typeof rawLang !== "string") return "javascript";
+  const lang = rawLang.toLowerCase();
+  if (Object.prototype.hasOwnProperty.call(Prism.languages, lang) && typeof Prism.languages[lang] === "object") {
+    return lang;
+  }
+  // handle aliases or common codes
+  if (lang === "js") return "javascript";
+  if (lang === "ts") return "typescript";
+  if (lang === "py") return "python";
+  if (lang === "tsx") return "tsx";
+  if (lang === "jsx") return "jsx";
+  return "javascript";
+}
+
 // Custom renderer for Prism highlighting
 const renderer = new marked.Renderer();
-renderer.code = (code, language) => {
-  const validLang = language && Prism.languages[language] ? language : "javascript";
+renderer.code = function(code: string, language: string | undefined, isEscaped?: boolean) {
+  const validLang = resolvePrismLanguage(language);
   const html = Prism.highlight(code, Prism.languages[validLang], validLang);
   return `<pre style="position: relative;"><code class="language-${validLang}">${html}</code></pre>`;
 };
