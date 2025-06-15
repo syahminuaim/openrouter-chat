@@ -99,7 +99,7 @@ export default function Index() {
     setProjects(prev => [...prev, newProject]);
   };
 
-  // ... keep existing code (handleToggleProject, handleRenameProject, handleDeleteProject functions)
+  // ... keep existing code (handleToggleProject, handleRenameProject, handleDeleteProject functions) the same ...
 
   const handleToggleProject = (projectId: string) => {
     setProjects(prev => prev.map(p => p.id === projectId ? {
@@ -136,7 +136,7 @@ export default function Index() {
     setActiveChatId(newChat.id);
   };
 
-  // ... keep existing code (handleSelectChat, handleRenameChat, handleDeleteChat, handleMoveChatToProject functions)
+  // ... keep existing code (handleSelectChat, handleRenameChat, handleDeleteChat, handleMoveChatToProject functions) the same ...
 
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
