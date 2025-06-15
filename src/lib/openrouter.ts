@@ -7,6 +7,7 @@ export interface OpenRouterMessage {
 export async function fetchOpenRouterChat(
   apiKey: string,
   messages: OpenRouterMessage[],
+  model: string = "openchat/openchat-3.5-1210", // default to OpenChat 3.5 or as passed
   signal?: AbortSignal
 ): Promise<string> {
   // Following OpenRouter API pattern, adapt as needed
@@ -17,7 +18,7 @@ export async function fetchOpenRouterChat(
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "openchat/openchat-3.5-1210", // You can let user pick later!
+      model,
       messages: messages.map(({ role, content }) => ({ role, content }))
     }),
     signal
@@ -32,3 +33,4 @@ export async function fetchOpenRouterChat(
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? "No response from model.";
 }
+

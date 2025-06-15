@@ -1,7 +1,7 @@
-
 import { useEffect, useRef, useState } from "react";
 import Message from "./Message";
 import ApiKeyInput from "./ApiKeyInput";
+import ModelSelect from "./ModelSelect";
 import { fetchOpenRouterChat, OpenRouterMessage } from "@/lib/openrouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [model, setModel] = useState<string>("openchat/openchat-3.5-1210");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function Chat() {
     setInput("");
 
     try {
-      const aiContent = await fetchOpenRouterChat(apiKey, newMessages);
+      const aiContent = await fetchOpenRouterChat(apiKey, newMessages, model);
       setMessages([
         ...newMessages,
         { role: "assistant", content: aiContent }
@@ -77,6 +78,13 @@ export default function Chat() {
 
   return (
     <div className="w-full max-w-2xl bg-card/90 mx-auto mt-10 rounded-2xl shadow-2xl flex flex-col min-h-[70vh] border border-border">
+      {/* Model selection header */}
+      <div className="px-6 pt-6">
+        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+          <span className="text-sm font-medium text-muted-foreground">Model:</span>
+          <ModelSelect value={model} onChange={setModel} />
+        </div>
+      </div>
       <div className="flex flex-col gap-4 p-6 overflow-y-auto flex-1">
         {messages.length === 0 && (
           <div className="text-center text-muted-foreground text-base py-16">
