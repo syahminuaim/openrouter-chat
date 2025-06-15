@@ -34,8 +34,8 @@ export default function MessageBubble({
     "bg-[#f1f0f0] dark:bg-[#23272d] text-black dark:text-white border border-[#e4e4e7] dark:border-[#353941]";
   const assistantBubble = "rounded-3xl rounded-bl-[8px]";
 
-  // iMessage-inspired, tighter bubble paddings
-  const bubblePadding = "px-3 py-1.5";
+  // More padding for iMessage bubbles
+  const bubblePadding = "px-4 py-2";
 
   return (
     <div
@@ -43,7 +43,7 @@ export default function MessageBubble({
         "w-full flex flex-col gap-0 px-2",
         isUser ? "items-end" : "items-start"
       )}
-      style={{ marginBottom: "0.15rem" }}
+      style={{ marginBottom: "0.125rem" }} // slightly less margin below
     >
       <div
         className={cn(
@@ -54,9 +54,14 @@ export default function MessageBubble({
             : `${assistantBg} ${assistantBubble} self-start mr-3`,
           streaming && isUser && "opacity-75"
         )}
-        style={{ minHeight: "1.75rem" }}
+        style={{ minHeight: "1.9rem" }}
       >
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+        <div
+          className={cn(
+            "prose prose-sm max-w-none dark:prose-invert",
+            !isUser && "prose-px-0" // remove unwanted horizontal padding for assistant/Markdown
+          )}
+        >
           {role === "user" ? (
             <div className="whitespace-pre-wrap break-words">{content}</div>
           ) : (
@@ -71,7 +76,7 @@ export default function MessageBubble({
       {(timestamp || true) && (
         <div
           className={cn(
-            "flex items-center gap-0.5 mt-0.5 pb-0.5 select-none group",
+            "flex items-center gap-0.5 mt-0.5 pb-0 select-none group",
             isUser ? "justify-end pr-2" : "justify-start pl-2"
           )}
           style={{ minHeight: "16px" }}
