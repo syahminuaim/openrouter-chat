@@ -93,6 +93,29 @@ export default function Index() {
     );
   };
 
+  // Rename and delete chat handlers
+  const handleRenameChat = (chatId: string, newName: string) => {
+    setChats(cs =>
+      cs.map(chat =>
+        chat.id === chatId ? { ...chat, name: newName } : chat
+      )
+    );
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    setChats(cs => cs.filter(chat => chat.id !== chatId));
+    setTimeout(() => {
+      setActiveChatId(cs => {
+        // If current chat removed, pick next available or null
+        if (chats.find(c => c.id === chatId)) {
+          const remaining = chats.filter(c => c.id !== chatId);
+          return remaining.length > 0 ? remaining[0].id : "";
+        }
+        return cs;
+      });
+    }, 0);
+  };
+
   // Get currently selected chat object to pass to Chat component
   const activeChat = chats.find(c => c.id === activeChatId);
 
@@ -116,6 +139,8 @@ export default function Index() {
           onSelectChat={handleSelectChat}
           onCreateChat={handleCreateChat}
           onToggleFolder={handleToggleFolder}
+          onRenameChat={handleRenameChat}
+          onDeleteChat={handleDeleteChat}
         />
         <SidebarInset>
           <div className="flex items-center justify-between p-2">
@@ -142,3 +167,4 @@ export default function Index() {
     </div>
   );
 }
+

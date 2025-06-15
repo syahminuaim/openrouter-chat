@@ -1,3 +1,4 @@
+
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +11,8 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Folder, FolderOpen, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ChatMenu } from "./ChatMenu";
 
 interface ChatFolder {
   id: string;
@@ -32,6 +33,8 @@ interface AppSidebarProps {
   onSelectChat: (chatId: string) => void;
   onCreateChat: () => void;
   onToggleFolder: (folderId: string) => void;
+  onRenameChat: (chatId: string, newName: string) => void;
+  onDeleteChat: (chatId: string) => void;
 }
 
 export function AppSidebar({
@@ -41,6 +44,8 @@ export function AppSidebar({
   onSelectChat,
   onCreateChat,
   onToggleFolder,
+  onRenameChat,
+  onDeleteChat,
 }: AppSidebarProps) {
   return (
     <Sidebar>
@@ -79,15 +84,21 @@ export function AppSidebar({
                   {folder.open && folder.chats.length > 0 && (
                     folder.chats.map(chat => (
                       <SidebarMenuItem key={chat.id}>
-                        <SidebarMenuButton
-                          onClick={() => onSelectChat(chat.id)}
-                          isActive={activeChatId === chat.id}
-                          size="sm"
-                          className={cn("pl-9", activeChatId === chat.id && "font-semibold")}
-                          variant="default"
+                        <ChatMenu
+                          chatName={chat.name}
+                          onRename={newName => onRenameChat(chat.id, newName)}
+                          onDelete={() => onDeleteChat(chat.id)}
                         >
-                          <span>{chat.name}</span>
-                        </SidebarMenuButton>
+                          <SidebarMenuButton
+                            onClick={() => onSelectChat(chat.id)}
+                            isActive={activeChatId === chat.id}
+                            size="sm"
+                            className={cn("pl-9", activeChatId === chat.id && "font-semibold")}
+                            variant="default"
+                          >
+                            <span>{chat.name}</span>
+                          </SidebarMenuButton>
+                        </ChatMenu>
                       </SidebarMenuItem>
                     ))
                   )}
@@ -101,15 +112,21 @@ export function AppSidebar({
                   </div>
                   {uncategorizedChats.map(chat => (
                     <SidebarMenuItem key={chat.id}>
-                      <SidebarMenuButton
-                        onClick={() => onSelectChat(chat.id)}
-                        isActive={activeChatId === chat.id}
-                        size="sm"
-                        className={cn("pl-7", activeChatId === chat.id && "font-semibold")}
-                        variant="default"
+                      <ChatMenu
+                        chatName={chat.name}
+                        onRename={newName => onRenameChat(chat.id, newName)}
+                        onDelete={() => onDeleteChat(chat.id)}
                       >
-                        <span>{chat.name}</span>
-                      </SidebarMenuButton>
+                        <SidebarMenuButton
+                          onClick={() => onSelectChat(chat.id)}
+                          isActive={activeChatId === chat.id}
+                          size="sm"
+                          className={cn("pl-7", activeChatId === chat.id && "font-semibold")}
+                          variant="default"
+                        >
+                          <span>{chat.name}</span>
+                        </SidebarMenuButton>
+                      </ChatMenu>
                     </SidebarMenuItem>
                   ))}
                 </>
@@ -128,3 +145,4 @@ export function AppSidebar({
     </Sidebar>
   );
 }
+
