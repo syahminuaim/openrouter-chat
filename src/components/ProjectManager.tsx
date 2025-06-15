@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, Folder, FolderOpen, ChevronRight, ChevronDown, Trash2 } from "lucide-react";
-import { ChatMenu } from "./ChatMenu";
+import { Plus } from "lucide-react";
+import NewProjectForm from "./NewProjectForm";
+import ProjectItem from "./ProjectItem";
+import UncategorizedChats from "./UncategorizedChats";
 
 interface Project {
   id: string;
@@ -45,18 +47,8 @@ export default function ProjectManager({
   onDeleteChat,
   onMoveChatToProject,
 }: ProjectManagerProps) {
-  const [newProjectName, setNewProjectName] = useState("");
-  const [showNewProject, setShowNewProject] = useState(false);
   const [draggedChatId, setDraggedChatId] = useState<string | null>(null);
   const [dragOverProjectId, setDragOverProjectId] = useState<string | null>(null);
-
-  const handleCreateProject = () => {
-    if (newProjectName.trim()) {
-      onCreateProject(newProjectName.trim());
-      setNewProjectName("");
-      setShowNewProject(false);
-    }
-  };
 
   const handleDragStart = (e: React.DragEvent, chatId: string) => {
     setDraggedChatId(chatId);
@@ -96,148 +88,48 @@ export default function ProjectManager({
         New Chat
       </Button>
 
-      {/* New Project Button */}
-      {showNewProject ? (
-        <div className="flex gap-2 px-2 mb-4">
-          <Input
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
-            placeholder="Project name"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleCreateProject();
-              if (e.key === "Escape") setShowNewProject(false);
-            }}
-            autoFocus
-            className="h-8 text-sm"
-          />
-          <Button onClick={handleCreateProject} size="sm" className="h-8">
-            Add
-          </Button>
-        </div>
-      ) : (
-        <Button
-          onClick={() => setShowNewProject(true)}
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 mb-4"
-        >
-          <Plus size={16} />
-          New Project
-        </Button>
-      )}
+      {/* New Project Form */}
+      <NewProjectForm onCreateProject={onCreateProject} />
 
       {/* Projects */}
       {projects.map((project) => {
         const projectChats = chats.filter(chat => chat.projectId === project.id);
         
         return (
-          <div key={project.id} className="space-y-1">
-            <div 
-              className={`flex items-center justify-between group rounded-md transition-colors ${
-                dragOverProjectId === project.id ? 'bg-blue-100 dark:bg-blue-900' : ''
-              }`}
-              onDragOver={(e) => handleDragOver(e, project.id)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, project.id)}
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onToggleProject(project.id)}
-                className="flex-1 justify-start gap-2 px-2"
-              >
-                {project.expanded ? <FolderOpen size={16} /> : <Folder size={16} />}
-                <span className="truncate">{project.name}</span>
-              </Button>
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onCreateChat(project.id)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Plus size={14} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDeleteProject(project.id)}
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                >
-                  <Trash2 size={14} />
-                </Button>
-              </div>
-            </div>
-            
-            {project.expanded && (
-              <div className="ml-4 space-y-1">
-                {projectChats.map((chat) => (
-                  <ChatMenu
-                    key={chat.id}
-                    chatName={chat.name}
-                    onRename={(newName) => onRenameChat(chat.id, newName)}
-                    onDelete={() => onDeleteChat(chat.id)}
-                  >
-                    <div
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, chat.id)}
-                      className="cursor-move"
-                    >
-                      <Button
-                        variant={activeChatId === chat.id ? "secondary" : "ghost"}
-                        size="sm"
-                        onClick={() => onSelectChat(chat.id)}
-                        className="w-full justify-start px-2 py-1 h-8 text-sm"
-                      >
-                        <span className="truncate">{chat.name}</span>
-                      </Button>
-                    </div>
-                  </ChatMenu>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProjectItem
+            key={project.id}
+            project={project}
+            projectChats={projectChats}
+            activeChatId={activeChatId}
+            dragOverProjectId={dragOverProjectId}
+            onToggleProject={onToggleProject}
+            onDeleteProject={onDeleteProject}
+            onCreateChat={onCreateChat}
+            onSelectChat={onSelectChat}
+            onRenameChat={onRenameChat}
+            onDeleteChat={onDeleteChat}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragStart={handleDragStart}
+          />
         );
       })}
 
       {/* Uncategorized Chats */}
-      {uncategorizedChats.length > 0 && (
-        <div className="space-y-1">
-          <div 
-            className={`text-xs text-muted-foreground px-2 py-1 rounded-md transition-colors ${
-              dragOverProjectId === null && draggedChatId ? 'bg-blue-100 dark:bg-blue-900' : ''
-            }`}
-            onDragOver={(e) => handleDragOver(e)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e)}
-          >
-            Recent
-          </div>
-          {uncategorizedChats.map((chat) => (
-            <ChatMenu
-              key={chat.id}
-              chatName={chat.name}
-              onRename={(newName) => onRenameChat(chat.id, newName)}
-              onDelete={() => onDeleteChat(chat.id)}
-            >
-              <div
-                draggable
-                onDragStart={(e) => handleDragStart(e, chat.id)}
-                className="cursor-move"
-              >
-                <Button
-                  variant={activeChatId === chat.id ? "secondary" : "ghost"}
-                  size="sm"
-                  onClick={() => onSelectChat(chat.id)}
-                  className="w-full justify-start px-2 py-1 h-8 text-sm"
-                >
-                  <span className="truncate">{chat.name}</span>
-                </Button>
-              </div>
-            </ChatMenu>
-          ))}
-        </div>
-      )}
+      <UncategorizedChats
+        chats={uncategorizedChats}
+        activeChatId={activeChatId}
+        draggedChatId={draggedChatId}
+        dragOverProjectId={dragOverProjectId}
+        onSelectChat={onSelectChat}
+        onRenameChat={onRenameChat}
+        onDeleteChat={onDeleteChat}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onDragStart={handleDragStart}
+      />
     </div>
   );
 }
