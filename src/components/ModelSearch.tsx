@@ -15,7 +15,7 @@ export default function ModelSearch({ value, onChange }: ModelSearchProps) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Search models..."
-          className="bg-background text-sm pl-8 border border-zinc-300 focus:outline-none focus:ring-0 focus:border-zinc-300 focus:shadow-none shadow-none ring-0 transition"
+          className="bg-background text-sm pl-8 focus:outline-none focus:ring-0 focus:border-input focus:shadow-none shadow-none ring-0 transition"
           autoFocus
         />
         <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />

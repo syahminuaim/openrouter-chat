@@ -47,8 +47,8 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
         <SelectTrigger
           className={`
             ${compact ? "h-8 text-xs" : ""}
-            border border-zinc-300 bg-background
-            focus:outline-none focus:ring-0 focus:border-zinc-400
+            bg-background text-sm
+            focus:outline-none focus:ring-0 focus:border-input
             ring-0 shadow-none
             transition
           `}
