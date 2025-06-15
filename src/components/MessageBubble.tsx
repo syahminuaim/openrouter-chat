@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CopyCheck } from "lucide-react";
@@ -59,11 +58,7 @@ export default function MessageBubble({
             !isUser && "prose-px-0"
           )}
         >
-          {isUser ? (
-            <div className="whitespace-pre-wrap break-words">{content}</div>
-          ) : (
-            <MarkdownMessage content={content} className="mb-0 pb-0" />
-          )}
+          <div className="whitespace-pre-wrap break-words">{content}</div>
           {streaming && role === "assistant" && (
             <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
           )}
