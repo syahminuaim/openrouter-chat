@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import Message from "./Message";
 import ApiKeyInput from "./ApiKeyInput";
@@ -7,19 +8,30 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-export default function Chat() {
+interface ChatProps {
+  chatKey: string;
+  initialMessages: OpenRouterMessage[];
+  onSendMessage?: (msg: OpenRouterMessage) => void;
+}
+
+export default function Chat({ chatKey, initialMessages, onSendMessage }: ChatProps) {
+  // Support reloading messages if chatKey changes (switching chats)
   const [apiKey, setApiKey] = useState<string | undefined>(() =>
     typeof window !== "undefined"
       ? localStorage.getItem("openrouter-api-key") ?? undefined
       : undefined
   );
-  const [messages, setMessages] = useState<OpenRouterMessage[]>([
-    // start the chat empty for now
-  ]);
+
+  // Model selection (per chat for now, can be global if preferred)
+  const [model, setModel] = useState<string>("openchat/openchat-3.5-1210");
+
+  // Reset messages if switching to another chat
+  const [messages, setMessages] = useState<OpenRouterMessage[]>(initialMessages);
+  useEffect(() => setMessages(initialMessages), [chatKey, initialMessages]);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [model, setModel] = useState<string>("openchat/openchat-3.5-1210");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,6 +49,7 @@ export default function Chat() {
     ];
     setMessages(newMessages);
     setInput("");
+    if (onSendMessage) onSendMessage({ role: "user", content: input });
 
     try {
       const aiContent = await fetchOpenRouterChat(apiKey, newMessages, model);
@@ -44,12 +57,14 @@ export default function Chat() {
         ...newMessages,
         { role: "assistant", content: aiContent }
       ]);
+      if (onSendMessage) onSendMessage({ role: "assistant", content: aiContent });
     } catch (error: any) {
       setErrorMsg(error?.message ?? "Unknown error");
       setMessages([
         ...newMessages,
         { role: "assistant", content: "Sorry, there was an error connecting to OpenRouter." }
       ]);
+      if (onSendMessage) onSendMessage({ role: "assistant", content: "Sorry, there was an error connecting to OpenRouter." });
     } finally {
       setLoading(false);
     }
@@ -77,7 +92,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="w-full max-w-2xl bg-card/90 mx-auto mt-10 rounded-2xl shadow-2xl flex flex-col min-h-[70vh] border border-border">
+    <div className="w-full bg-card/90 mx-auto rounded-2xl shadow-2xl flex flex-col min-h-[70vh] border border-border">
       {/* Model selection header */}
       <div className="px-6 pt-6">
         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
