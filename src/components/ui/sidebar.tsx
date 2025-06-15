@@ -2,7 +2,6 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
-import { Minimize, ArrowLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -174,7 +173,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
     if (collapsible === "none") {
       return (
@@ -186,8 +185,6 @@ const Sidebar = React.forwardRef<
           ref={ref}
           {...props}
         >
-          {/* Minimize button for desktop */}
-          <SidebarMinimizeButton />
           {children}
         </div>
       )
@@ -222,8 +219,6 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* Sidebar minimize button (desktop only, top of sidebar) */}
-        <SidebarMinimizeButton />
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
@@ -253,8 +248,6 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
-            {/* Minimize button floats to the top, only for desktop */}
-            <SidebarMinimizeButton />
             {children}
           </div>
         </div>
@@ -263,31 +256,6 @@ const Sidebar = React.forwardRef<
   }
 )
 Sidebar.displayName = "Sidebar"
-
-// Minimize button component (improved styling and icon)
-const SidebarMinimizeButton = () => {
-  const { state, toggleSidebar } = useSidebar()
-
-  // Only show on desktop, and only if not collapsed
-  return (
-    <button
-      type="button"
-      className={cn(
-        "absolute left-3 top-3 z-20 flex items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg hover:bg-primary hover:text-primary-foreground transition-all md:inline-block hidden",
-        "w-10 h-10",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-        "data-[state=collapsed]:hidden"
-      )}
-      aria-label="Minimize sidebar"
-      onClick={() => toggleSidebar()}
-      data-state={state}
-      tabIndex={0}
-      style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.12)" }}
-    >
-      <ArrowLeft size={22} strokeWidth={2.5} />
-    </button>
-  )
-}
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
