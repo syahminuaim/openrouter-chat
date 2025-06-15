@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import Chat from "@/components/Chat";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger, SidebarProvider } from "@/components/ui/sidebar";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -27,7 +27,6 @@ function uuid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-// Initial state helpers
 const DEFAULT_CHATS: Chat[] = [
   {
     id: "chat-1",
@@ -47,19 +46,16 @@ const DEFAULT_FOLDERS: Folder[] = [
 ];
 
 export default function Index() {
-  // Central app state for chats and folders
   const [chats, setChats] = useState<Chat[]>(DEFAULT_CHATS);
   const [folders, setFolders] = useState<Folder[]>(DEFAULT_FOLDERS);
   const [activeChatId, setActiveChatId] = useState<string>(DEFAULT_CHATS[0].id);
 
-  // Group chats into folders and uncategorized for sidebar
   const chatFolders = folders.map(folder => ({
     ...folder,
     chats: chats.filter(c => c.folderId === folder.id).map(({ id, name }) => ({ id, name }))
   }));
   const uncategorizedChats = chats.filter(c => !c.folderId).map(({ id, name }) => ({ id, name }));
 
-  // Callbacks for sidebar actions
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
   };
@@ -93,7 +89,6 @@ export default function Index() {
     );
   };
 
-  // Rename and delete chat handlers
   const handleRenameChat = (chatId: string, newName: string) => {
     setChats(cs =>
       cs.map(chat =>
@@ -106,7 +101,6 @@ export default function Index() {
     setChats(cs => cs.filter(chat => chat.id !== chatId));
     setTimeout(() => {
       setActiveChatId(cs => {
-        // If current chat removed, pick next available or null
         if (chats.find(c => c.id === chatId)) {
           const remaining = chats.filter(c => c.id !== chatId);
           return remaining.length > 0 ? remaining[0].id : "";
@@ -116,55 +110,55 @@ export default function Index() {
     }, 0);
   };
 
-  // Get currently selected chat object to pass to Chat component
   const activeChat = chats.find(c => c.id === activeChatId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/80 flex flex-col items-center justify-start pb-12">
-      <header className="w-full flex flex-col items-center mt-12 mb-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-2">
-          OpenRouter Chat
-        </h1>
-        <p className="text-lg text-muted-foreground font-medium max-w-xl text-center">
-          Chat with your favorite Large Language Models using your OpenRouter API key.<br />
-          <span className="text-sm">Your key is stored locally and never leaves your computer.</span>
-        </p>
-      </header>
-      {/* App Layout: Sidebar + Chat area */}
-      <div className="flex w-full max-w-6xl flex-1">
-        <AppSidebar
-          chatFolders={chatFolders}
-          uncategorizedChats={uncategorizedChats}
-          activeChatId={activeChatId}
-          onSelectChat={handleSelectChat}
-          onCreateChat={handleCreateChat}
-          onToggleFolder={handleToggleFolder}
-          onRenameChat={handleRenameChat}
-          onDeleteChat={handleDeleteChat}
-        />
-        <SidebarInset>
-          <div className="flex items-center justify-between p-2">
-            <SidebarTrigger />
-          </div>
-          {activeChat ? (
-            <Chat
-              chatKey={activeChat.id}
-              initialMessages={activeChat.messages}
-              onSendMessage={msg => handleAppendMessage(activeChat.id, msg)}
-            />
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-2xl">
-              Select a chat to begin
+    <SidebarProvider>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/80 flex flex-col items-center justify-start pb-12 w-full">
+        <header className="w-full flex flex-col items-center mt-12 mb-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-2">
+            OpenRouter Chat
+          </h1>
+          <p className="text-lg text-muted-foreground font-medium max-w-xl text-center">
+            Chat with your favorite Large Language Models using your OpenRouter API key.<br />
+            <span className="text-sm">Your key is stored locally and never leaves your computer.</span>
+          </p>
+        </header>
+        {/* App Layout: Sidebar + Chat area */}
+        <div className="flex w-full max-w-6xl flex-1 min-h-0">
+          <AppSidebar
+            chatFolders={chatFolders}
+            uncategorizedChats={uncategorizedChats}
+            activeChatId={activeChatId}
+            onSelectChat={handleSelectChat}
+            onCreateChat={handleCreateChat}
+            onToggleFolder={handleToggleFolder}
+            onRenameChat={handleRenameChat}
+            onDeleteChat={handleDeleteChat}
+          />
+          <SidebarInset>
+            <div className="flex items-center justify-between p-2">
+              <SidebarTrigger />
             </div>
-          )}
-        </SidebarInset>
+            {activeChat ? (
+              <Chat
+                chatKey={activeChat.id}
+                initialMessages={activeChat.messages}
+                onSendMessage={msg => handleAppendMessage(activeChat.id, msg)}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground text-2xl">
+                Select a chat to begin
+              </div>
+            )}
+          </SidebarInset>
+        </div>
+        <footer className="mt-8 text-muted-foreground text-xs text-center opacity-70">
+          <p>
+            Not affiliated with OpenRouter, OpenAI, or ChatGPT. | Powered by <a href="https://openrouter.ai/" className="underline hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">OpenRouter</a>
+          </p>
+        </footer>
       </div>
-      <footer className="mt-8 text-muted-foreground text-xs text-center opacity-70">
-        <p>
-          Not affiliated with OpenRouter, OpenAI, or ChatGPT. | Powered by <a href="https://openrouter.ai/" className="underline hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">OpenRouter</a>
-        </p>
-      </footer>
-    </div>
+    </SidebarProvider>
   );
 }
-
