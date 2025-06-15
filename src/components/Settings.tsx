@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, X, Moon, Sun } from "lucide-react";
+import { Settings as SettingsIcon, X, Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface SettingsProps {
@@ -45,7 +45,7 @@ export default function Settings({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="flex items-center gap-2">
-          <Settings size={16} />
+          <SettingsIcon size={16} />
           Settings
         </Button>
       </DialogTrigger>
