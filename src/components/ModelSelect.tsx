@@ -315,7 +315,7 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
             {compact && selectedModel ? selectedModel.label : undefined}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-96">
+        <SelectContent className="max-h-[500px]">
           <div className="sticky top-0 z-20 bg-popover border-b border-border">
             <div className="p-2">
               <div className="relative">
@@ -340,7 +340,7 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
               </div>
             </div>
           </div>
-          <ScrollArea className="max-h-80">
+          <ScrollArea className="max-h-[400px]">
             <div className="p-1">
               {Object.entries(groupedModels).map(([category, models]) => (
                 <SelectGroup key={category}>
