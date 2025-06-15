@@ -36,11 +36,11 @@ export default function MessageBubble({
     >
       <div
         className={cn(
-          // Bubble styles
-          "max-w-[80%] rounded-2xl px-4 py-2 shadow transition-colors break-words relative",
+          // Bubble styles (smaller width & tighter padding)
+          "max-w-[60%] rounded-2xl px-3 py-1.5 shadow transition-colors break-words relative",
           isUser
-            ? "bg-primary text-primary-foreground self-end ml-12" // right side, margin left for avatar area we don't show
-            : "bg-muted text-foreground self-start mr-12", // left side, margin right for avatar area we don't show
+            ? "bg-primary text-primary-foreground self-end ml-8"
+            : "bg-muted text-foreground self-start mr-8",
           streaming && isUser && "opacity-75"
         )}
       >
@@ -77,4 +77,3 @@ export default function MessageBubble({
     </div>
   );
 }
-
