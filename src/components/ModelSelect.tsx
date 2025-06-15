@@ -61,7 +61,7 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
             ) : undefined}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[300px] w-[400px] p-0">
+        <SelectContent className="max-h-[300px] w-[400px] p-0" hideScrollButtons={true}>
           <ModelSearch value={search} onChange={setSearch} />
           <div className="max-h-[250px] overflow-y-auto">
             <ModelList 
