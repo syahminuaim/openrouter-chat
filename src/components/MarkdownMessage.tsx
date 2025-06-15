@@ -4,6 +4,7 @@ import { marked } from "marked";
 import Prism from "prismjs";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
+import "prismjs/components/prism-typescript";
 import "prismjs/components/prism-tsx";
 import "prismjs/themes/prism.css";
 import { Copy } from "lucide-react";
@@ -17,7 +18,10 @@ type MarkdownMessageProps = {
 function resolvePrismLanguage(rawLang: string | undefined | null) {
   if (!rawLang || typeof rawLang !== "string") return "javascript";
   const lang = rawLang.toLowerCase();
-  if (Object.prototype.hasOwnProperty.call(Prism.languages, lang) && typeof Prism.languages[lang] === "object") {
+  if (
+    Object.prototype.hasOwnProperty.call(Prism.languages, lang) &&
+    typeof Prism.languages[lang] === "object"
+  ) {
     return lang;
   }
   // handle aliases or common codes
@@ -31,7 +35,9 @@ function resolvePrismLanguage(rawLang: string | undefined | null) {
 
 // Custom renderer for Prism highlighting
 const renderer = new marked.Renderer();
-renderer.code = function(code: string, language: string | undefined, isEscaped?: boolean) {
+renderer.code = function (code, language, ...rest) {
+  // `marked` v15 renderer signature: (code: string, infoString?: string | undefined, escaped?: boolean | undefined, ...args: any[])
+  // We want language for Prism
   const validLang = resolvePrismLanguage(language);
   const html = Prism.highlight(code, Prism.languages[validLang], validLang);
   return `<pre style="position: relative;"><code class="language-${validLang}">${html}</code></pre>`;
@@ -49,7 +55,7 @@ export default function MarkdownMessage({ content, className }: MarkdownMessageP
   useEffect(() => {
     if (!ref.current) return;
     Prism.highlightAllUnder(ref.current);
-    ref.current.querySelectorAll<HTMLElement>("pre").forEach(pre => {
+    ref.current.querySelectorAll<HTMLElement>("pre").forEach((pre) => {
       if (pre.querySelector(".copy-btn")) return; // Don't double-insert
       const button = document.createElement("button");
       button.textContent = "Copy";
@@ -72,7 +78,9 @@ export default function MarkdownMessage({ content, className }: MarkdownMessageP
   return (
     <div
       ref={ref}
-      className={"prose prose-neutral max-w-none dark:prose-invert mt-1 " + (className ?? "")}
+      className={
+        "prose prose-neutral max-w-none dark:prose-invert mt-1 " + (className ?? "")
+      }
       // Use custom renderer
       dangerouslySetInnerHTML={{ __html: marked.parse(content, { renderer }) }}
       tabIndex={0}
