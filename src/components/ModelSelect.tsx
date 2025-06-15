@@ -57,9 +57,9 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
             {compact && selectedModel ? selectedModel.label : undefined}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[500px] w-[400px]">
+        <SelectContent className="max-h-[350px] w-[400px]">
           <ModelSearch value={search} onChange={setSearch} />
-          <div className="max-h-[450px] overflow-y-auto">
+          <div className="max-h-[300px] overflow-y-auto">
             <ModelList 
               groupedModels={groupedModels} 
               filteredModelsLength={filteredModels.length}
