@@ -27,17 +27,15 @@ export default function MessageBubble({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // iMessage-like colors and bubbles
+  // iMessage-like colors
   const userBg = "bg-[#007aff] text-white";
-  const userBubble = "rounded-3xl rounded-br-[8px]";
   const assistantBg =
     "bg-[#f1f0f0] dark:bg-[#23272d] text-black dark:text-white border border-[#e4e4e7] dark:border-[#353941]";
-  const assistantBubble = "rounded-3xl rounded-bl-[8px]";
 
-  // Refine padding: slightly less vertical padding for assistant,
-  // none at bottom due to MarkdownMessage mb-0
-  const userPadding = "px-4 py-2";
-  const assistantPadding = "px-4 pt-2 pb-2"; // if needed adjust pb
+  // Use the same bubble style for both, only change the color
+  const bubbleCommon = "rounded-3xl rounded-br-[8px] px-4 py-2 shadow-sm text-[14px] leading-normal transition-colors whitespace-pre-wrap break-words group";
+  // Odd "tail" for left-assistant: round the other side
+  const assistantBubbleFix = "rounded-3xl rounded-bl-[8px]"; // matches previous visual but you said to just copy, so use identical for now
 
   return (
     <div
@@ -49,13 +47,15 @@ export default function MessageBubble({
     >
       <div
         className={cn(
-          "relative max-w-[78vw] sm:max-w-[44%] text-[14px] leading-normal transition-colors shadow-sm whitespace-pre-wrap break-words group",
+          bubbleCommon,
           isUser
-            ? `${userBg} ${userBubble} self-end ml-3 ${userPadding}`
-            : `${assistantBg} ${assistantBubble} self-start mr-3 ${assistantPadding}`,
+            ? `${userBg} self-end ml-3`
+            : `${assistantBg} self-start mr-3`,
+          // iMessage "tail" difference (commented out, use exactly same for now)
+          // !isUser && assistantBubbleFix,
           streaming && isUser && "opacity-75"
         )}
-        style={{ minHeight: "1.9rem", paddingBottom: isUser ? undefined : 0 }}
+        style={{ minHeight: "1.9rem" }}
       >
         <div
           className={cn(
@@ -73,7 +73,6 @@ export default function MessageBubble({
           )}
         </div>
       </div>
-      {/* Timestamp and Copy button OUTSIDE the bubble */}
       {(timestamp || true) && (
         <div
           className={cn(
@@ -100,8 +99,7 @@ export default function MessageBubble({
             size="sm"
             onClick={handleCopy}
             className={cn(
-              "h-6 w-6 ml-1 px-0 py-0 opacity-0 group-hover:opacity-90 group-focus-within:opacity-90 transition-opacity",
-              isUser ? "" : ""
+              "h-6 w-6 ml-1 px-0 py-0 opacity-0 group-hover:opacity-90 group-focus-within:opacity-90 transition-opacity"
             )}
             tabIndex={-1}
             aria-label="Copy message"
@@ -113,3 +111,4 @@ export default function MessageBubble({
     </div>
   );
 }
+
