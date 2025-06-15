@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import SidebarLayout from "@/components/SidebarLayout";
@@ -6,62 +7,33 @@ import ChatMessages from "@/components/ChatMessages";
 import ChatInput from "@/components/ChatInput";
 import { fetchOpenRouterChat, OpenRouterMessage } from "@/lib/openrouter";
 import { useToast } from "@/hooks/use-toast";
+import { useProjects } from "@/hooks/useProjects";
+import { useChats } from "@/hooks/useChats";
 
-interface Project {
-  id: string;
-  name: string;
-  expanded: boolean;
-}
-interface Chat {
-  id: string;
-  name: string;
-  projectId?: string;
-  messages: OpenRouterMessage[];
-  timestamp: Date;
-  model?: string;
-}
-function generateId() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
-
-// Load data from localStorage
-function loadFromStorage<T>(key: string, defaultValue: T): T {
-  try {
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : defaultValue;
-  } catch {
-    return defaultValue;
-  }
-}
-
-// Save data to localStorage
-function saveToStorage<T>(key: string, value: T) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
-    console.error("Failed to save to localStorage:", error);
-  }
-}
 export default function Index() {
-  // Core state
-  const [projects, setProjects] = useState<Project[]>(() => loadFromStorage("chatgpt-projects", []));
-  const [chats, setChats] = useState<Chat[]>(() => loadFromStorage("chatgpt-chats", []));
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
-
   // Settings state
   const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem("openrouter-api-key"));
   const [defaultModel, setDefaultModel] = useState<string>(() => localStorage.getItem("selected-model") || "openai/gpt-4o");
   const [theme, setTheme] = useState<"light" | "dark">(() => localStorage.getItem("theme") as "light" | "dark" || "light");
 
-  // Chat state
+  // Chat input/UI state
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [streamingText, setStreamingText] = useState<string | null>(null);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
-  // Apply theme
+  // Project and Chat state management using hooks
+  const {
+    projects, setProjects, handleCreateProject, handleToggleProject, handleRenameProject, handleDeleteProject
+  } = useProjects();
+
+  const {
+    chats, setChats, activeChatId, setActiveChatId,
+    handleCreateChat, handleSelectChat, handleRenameChat, handleDeleteChat,
+    handleMoveChatToProject, handleUpdateChatModel
+  } = useChats(projects, defaultModel);
+
+  // Theme management
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -71,13 +43,6 @@ export default function Index() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Save data to localStorage when state changes
-  useEffect(() => {
-    saveToStorage("chatgpt-projects", projects);
-  }, [projects]);
-  useEffect(() => {
-    saveToStorage("chatgpt-chats", chats);
-  }, [chats]);
   useEffect(() => {
     if (apiKey) {
       localStorage.setItem("openrouter-api-key", apiKey);
@@ -86,92 +51,21 @@ export default function Index() {
   useEffect(() => {
     localStorage.setItem("selected-model", defaultModel);
   }, [defaultModel]);
+
+  // Sync project deletes with chats
+  useEffect(() => {
+    setChats(prev =>
+      prev.map(chat =>
+        chat.projectId && !projects.some(p => p.id === chat.projectId)
+          ? { ...chat, projectId: undefined }
+          : chat
+      )
+    );
+    // eslint-disable-next-line
+  }, [projects]);
+
   const activeChat = chats.find(c => c.id === activeChatId);
   const currentModel = activeChat?.model || defaultModel;
-
-  // Project management
-  const handleCreateProject = (name: string) => {
-    const newProject: Project = {
-      id: generateId(),
-      name,
-      expanded: true
-    };
-    setProjects(prev => [...prev, newProject]);
-  };
-
-  // ... keep existing code (handleToggleProject, handleRenameProject, handleDeleteProject functions) the same ...
-
-  const handleToggleProject = (projectId: string) => {
-    setProjects(prev => prev.map(p => p.id === projectId ? {
-      ...p,
-      expanded: !p.expanded
-    } : p));
-  };
-  const handleRenameProject = (projectId: string, newName: string) => {
-    setProjects(prev => prev.map(p => p.id === projectId ? {
-      ...p,
-      name: newName
-    } : p));
-  };
-  const handleDeleteProject = (projectId: string) => {
-    setProjects(prev => prev.filter(p => p.id !== projectId));
-    // Also remove project reference from chats
-    setChats(prev => prev.map(chat => chat.projectId === projectId ? {
-      ...chat,
-      projectId: undefined
-    } : chat));
-  };
-
-  // Chat management
-  const handleCreateChat = (projectId?: string) => {
-    const newChat: Chat = {
-      id: generateId(),
-      name: "New Chat",
-      projectId,
-      messages: [],
-      timestamp: new Date(),
-      model: defaultModel // Use default model for new chats
-    };
-    setChats(prev => [newChat, ...prev]);
-    setActiveChatId(newChat.id);
-  };
-
-  // ... keep existing code (handleSelectChat, handleRenameChat, handleDeleteChat, handleMoveChatToProject functions) the same ...
-
-  const handleSelectChat = (chatId: string) => {
-    setActiveChatId(chatId);
-  };
-  const handleRenameChat = (chatId: string, newName: string) => {
-    setChats(prev => prev.map(chat => chat.id === chatId ? {
-      ...chat,
-      name: newName
-    } : chat));
-  };
-  const handleDeleteChat = (chatId: string) => {
-    setChats(prev => prev.filter(chat => chat.id !== chatId));
-    if (activeChatId === chatId) {
-      const remainingChats = chats.filter(chat => chat.id !== chatId);
-      setActiveChatId(remainingChats.length > 0 ? remainingChats[0].id : null);
-    }
-  };
-
-  // New function to move chat to project
-  const handleMoveChatToProject = (chatId: string, projectId?: string) => {
-    setChats(prev => prev.map(chat => chat.id === chatId ? {
-      ...chat,
-      projectId
-    } : chat));
-  };
-
-  // New function to update chat model
-  const handleUpdateChatModel = (model: string) => {
-    if (activeChatId) {
-      setChats(prev => prev.map(chat => chat.id === activeChatId ? {
-        ...chat,
-        model
-      } : chat));
-    }
-  };
 
   // Message handling
   const handleSendMessage = async () => {
@@ -192,8 +86,8 @@ export default function Index() {
     // Create or update chat
     let targetChatId = activeChatId;
     if (!targetChatId) {
-      const newChat: Chat = {
-        id: generateId(),
+      const newChat = {
+        id: Math.random().toString(36).slice(2) + Date.now().toString(36),
         name: messageContent.slice(0, 50) + (messageContent.length > 50 ? "..." : ""),
         messages: [],
         timestamp: new Date(),
@@ -262,10 +156,10 @@ export default function Index() {
       setStreamingText(null);
     }
   };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Sidebar */}
         <SidebarLayout
           projects={projects}
           chats={chats}
@@ -273,7 +167,16 @@ export default function Index() {
           onCreateProject={handleCreateProject}
           onToggleProject={handleToggleProject}
           onRenameProject={handleRenameProject}
-          onDeleteProject={handleDeleteProject}
+          onDeleteProject={projectId => {
+            handleDeleteProject(projectId);
+            setChats(prev =>
+              prev.map(chat =>
+                chat.projectId === projectId
+                  ? { ...chat, projectId: undefined }
+                  : chat
+              )
+            );
+          }}
           onSelectChat={handleSelectChat}
           onCreateChat={handleCreateChat}
           onRenameChat={handleRenameChat}
@@ -286,26 +189,19 @@ export default function Index() {
           theme={theme}
           onThemeChange={setTheme}
         />
-
-        {/* Main Content */}
         <SidebarInset className="flex-1">
           <div className="flex flex-col h-screen">
-            {/* Header */}
             <ChatHeader
               chatName={activeChat?.name || "New Chat"}
               model={currentModel}
-              onModelChange={activeChat ? handleUpdateChatModel : undefined}
+              onModelChange={activeChat ? (m:string) => handleUpdateChatModel(activeChat.id, m) : undefined}
               showModelSelect={!!activeChat}
             />
-
-            {/* Messages */}
             <ChatMessages
               messages={activeChat?.messages || []}
               streamingText={streamingText}
               loading={loading}
             />
-
-            {/* Input */}
             <ChatInput
               value={input}
               onChange={setInput}
