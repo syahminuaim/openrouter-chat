@@ -9,7 +9,7 @@ interface ModelSearchProps {
 
 export default function ModelSearch({ value, onChange }: ModelSearchProps) {
   return (
-    <div className="bg-popover border-b border-border p-2">
+    <div className="bg-popover/95 backdrop-blur-sm border-b border-border p-2">
       <div className="relative">
         <Input
           value={value}
