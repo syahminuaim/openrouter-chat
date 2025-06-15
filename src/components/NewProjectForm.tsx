@@ -44,7 +44,7 @@ export default function NewProjectForm({ onCreateProject }: NewProjectFormProps)
   return (
     <Button
       onClick={() => setShowNewProject(true)}
-      variant="ghost"
+      variant="outline"
       size="sm"
       className="w-full justify-start gap-2 mb-4"
     >
