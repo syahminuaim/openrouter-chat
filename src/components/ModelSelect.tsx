@@ -97,7 +97,15 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
   return (
     <div className={compact ? "min-w-[200px]" : "w-full max-w-xs"}>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className={compact ? "h-8 text-xs" : ""}>
+        <SelectTrigger
+          className={`
+            ${compact ? "h-8 text-xs" : ""}
+            border border-zinc-300 bg-background
+            focus:outline-none focus:ring-0 focus:border-zinc-400
+            ring-0 shadow-none
+            transition
+          `}
+        >
           <SelectValue placeholder="Select a model">
             {compact && selectedModel ? selectedModel.label : undefined}
           </SelectValue>
@@ -110,7 +118,13 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search models..."
-                className="bg-background text-sm pl-8"
+                className={`
+                  bg-background text-sm pl-8
+                  border border-zinc-300
+                  focus:outline-none focus:ring-0 focus:border-zinc-400
+                  shadow-none ring-0
+                  transition
+                `}
                 autoFocus
               />
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
