@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import {
   Select,
@@ -83,7 +82,6 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
       : MODEL_OPTIONS;
   }, [search]);
 
-  // Group filtered models
   const groupedModels = useMemo(() => {
     return filteredModels.reduce((acc, model) => {
       if (!acc[model.category]) acc[model.category] = [];
@@ -121,10 +119,14 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
                 className={`
                   bg-background text-sm pl-8
                   border border-zinc-300
-                  focus:outline-none focus:ring-0 focus:border-zinc-400
-                  shadow-none ring-0
-                  transition
+                  focus:outline-none focus:ring-0 focus:border-zinc-300 !important
+                  focus:shadow-none !important
+                  shadow-none ring-0 transition
                 `}
+                style={{
+                  boxShadow: "none",
+                  borderColor: "#d4d4d8", // zinc-300
+                }}
                 autoFocus
               />
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
