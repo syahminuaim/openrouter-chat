@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings as SettingsIcon, X, Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import ModelSelect from "./ModelSelect";
 
 interface SettingsProps {
   apiKey: string | null;
@@ -15,15 +15,6 @@ interface SettingsProps {
   theme: "light" | "dark";
   onThemeChange: (theme: "light" | "dark") => void;
 }
-
-const models = [
-  { value: "gpt-4.1-2025-04-14", label: "GPT-4.1 (Recommended)" },
-  { value: "o3-2025-04-16", label: "O3 Reasoner" },
-  { value: "o4-mini-2025-04-16", label: "O4 Mini" },
-  { value: "claude-opus-4-20250514", label: "Claude Opus 4" },
-  { value: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
-  { value: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
-];
 
 export default function Settings({ 
   apiKey, 
@@ -68,19 +59,8 @@ export default function Settings({
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Model</label>
-            <Select value={model} onValueChange={onModelChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {models.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-sm font-medium">Default Model (for new chats)</label>
+            <ModelSelect value={model} onChange={onModelChange} />
           </div>
 
           <div className="space-y-2">

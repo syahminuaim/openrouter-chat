@@ -7,6 +7,7 @@ import { Send, Loader2, Menu } from "lucide-react";
 import MessageBubble from "@/components/MessageBubble";
 import ProjectManager from "@/components/ProjectManager";
 import Settings from "@/components/Settings";
+import ModelSelect from "@/components/ModelSelect";
 import { fetchOpenRouterChat, OpenRouterMessage } from "@/lib/openrouter";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,6 +22,7 @@ interface Chat {
   projectId?: string;
   messages: OpenRouterMessage[];
   timestamp: Date;
+  model?: string; // Add model field to Chat interface
 }
 
 function generateId() {
@@ -54,7 +56,7 @@ export default function Index() {
 
   // Settings state
   const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem("openrouter-api-key"));
-  const [model, setModel] = useState<string>(() => localStorage.getItem("selected-model") || "gpt-4.1-2025-04-14");
+  const [defaultModel, setDefaultModel] = useState<string>(() => localStorage.getItem("selected-model") || "openai/gpt-4o");
   const [theme, setTheme] = useState<"light" | "dark">(() => localStorage.getItem("theme") as "light" | "dark" || "light");
 
   // Chat state
@@ -88,9 +90,11 @@ export default function Index() {
     }
   }, [apiKey]);
   useEffect(() => {
-    localStorage.setItem("selected-model", model);
-  }, [model]);
+    localStorage.setItem("selected-model", defaultModel);
+  }, [defaultModel]);
+  
   const activeChat = chats.find(c => c.id === activeChatId);
+  const currentModel = activeChat?.model || defaultModel;
 
   // Project management
   const handleCreateProject = (name: string) => {
@@ -101,6 +105,9 @@ export default function Index() {
     };
     setProjects(prev => [...prev, newProject]);
   };
+
+  // ... keep existing code (handleToggleProject, handleRenameProject, handleDeleteProject functions)
+
   const handleToggleProject = (projectId: string) => {
     setProjects(prev => prev.map(p => p.id === projectId ? {
       ...p,
@@ -129,11 +136,15 @@ export default function Index() {
       name: "New Chat",
       projectId,
       messages: [],
-      timestamp: new Date()
+      timestamp: new Date(),
+      model: defaultModel // Use default model for new chats
     };
     setChats(prev => [newChat, ...prev]);
     setActiveChatId(newChat.id);
   };
+
+  // ... keep existing code (handleSelectChat, handleRenameChat, handleDeleteChat, handleMoveChatToProject functions)
+
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
   };
@@ -160,6 +171,17 @@ export default function Index() {
     ));
   };
 
+  // New function to update chat model
+  const handleUpdateChatModel = (model: string) => {
+    if (activeChatId) {
+      setChats(prev => prev.map(chat => 
+        chat.id === activeChatId 
+          ? { ...chat, model } 
+          : chat
+      ));
+    }
+  };
+
   // Message handling
   const handleSendMessage = async () => {
     if (!input.trim() || loading || !apiKey) {
@@ -183,7 +205,8 @@ export default function Index() {
         id: generateId(),
         name: messageContent.slice(0, 50) + (messageContent.length > 50 ? "..." : ""),
         messages: [],
-        timestamp: new Date()
+        timestamp: new Date(),
+        model: defaultModel
       };
       setChats(prev => [newChat, ...prev]);
       targetChatId = newChat.id;
@@ -205,7 +228,8 @@ export default function Index() {
       // Get updated messages for API call
       const updatedChat = chats.find(c => c.id === targetChatId);
       const messages = updatedChat ? [...updatedChat.messages, userMessage] : [userMessage];
-      const response = await fetchOpenRouterChat(apiKey, messages, model);
+      const modelToUse = updatedChat?.model || defaultModel;
+      const response = await fetchOpenRouterChat(apiKey, messages, modelToUse);
 
       // Simulate streaming effect
       setStreamingText("");
@@ -247,6 +271,7 @@ export default function Index() {
       setStreamingText(null);
     }
   };
+
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
@@ -254,7 +279,7 @@ export default function Index() {
           <SidebarHeader className="p-4 border-b">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-lg">ChatGPT</h2>
-              <Settings apiKey={apiKey} onApiKeyChange={setApiKey} model={model} onModelChange={setModel} theme={theme} onThemeChange={setTheme} />
+              <Settings apiKey={apiKey} onApiKeyChange={setApiKey} model={defaultModel} onModelChange={setDefaultModel} theme={theme} onThemeChange={setTheme} />
             </div>
           </SidebarHeader>
           
@@ -291,8 +316,20 @@ export default function Index() {
                   {activeChat?.name || "New Chat"}
                 </h1>
               </div>
-              <div className="text-sm text-muted-foreground">
-                {model.split("/").pop()?.split("-")[0]?.toUpperCase() || "GPT"}
+              <div className="flex items-center gap-4">
+                {activeChat && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Model:</span>
+                    <ModelSelect 
+                      value={currentModel} 
+                      onChange={handleUpdateChatModel}
+                      compact={true}
+                    />
+                  </div>
+                )}
+                <div className="text-sm text-muted-foreground">
+                  {currentModel.split("/").pop()?.split("-")[0]?.toUpperCase() || "GPT"}
+                </div>
               </div>
             </header>
 
