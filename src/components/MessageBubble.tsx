@@ -34,8 +34,10 @@ export default function MessageBubble({
     "bg-[#f1f0f0] dark:bg-[#23272d] text-black dark:text-white border border-[#e4e4e7] dark:border-[#353941]";
   const assistantBubble = "rounded-3xl rounded-bl-[8px]";
 
-  // More padding for iMessage bubbles
-  const bubblePadding = "px-4 py-2";
+  // Refine padding: slightly less vertical padding for assistant,
+  // none at bottom due to MarkdownMessage mb-0
+  const userPadding = "px-4 py-2";
+  const assistantPadding = "px-4 pt-2 pb-2"; // if needed adjust pb
 
   return (
     <div
@@ -43,36 +45,35 @@ export default function MessageBubble({
         "w-full flex flex-col gap-0 px-2",
         isUser ? "items-end" : "items-start"
       )}
-      style={{ marginBottom: "0.125rem" }} // slightly less margin below
+      style={{ marginBottom: "0.125rem" }}
     >
       <div
         className={cn(
           "relative max-w-[78vw] sm:max-w-[44%] text-[14px] leading-normal transition-colors shadow-sm whitespace-pre-wrap break-words group",
-          bubblePadding,
           isUser
-            ? `${userBg} ${userBubble} self-end ml-3`
-            : `${assistantBg} ${assistantBubble} self-start mr-3`,
+            ? `${userBg} ${userBubble} self-end ml-3 ${userPadding}`
+            : `${assistantBg} ${assistantBubble} self-start mr-3 ${assistantPadding}`,
           streaming && isUser && "opacity-75"
         )}
-        style={{ minHeight: "1.9rem" }}
+        style={{ minHeight: "1.9rem", paddingBottom: isUser ? undefined : 0 }}
       >
         <div
           className={cn(
             "prose prose-sm max-w-none dark:prose-invert",
-            !isUser && "prose-px-0" // remove unwanted horizontal padding for assistant/Markdown
+            !isUser && "prose-px-0"
           )}
         >
           {role === "user" ? (
             <div className="whitespace-pre-wrap break-words">{content}</div>
           ) : (
-            <MarkdownMessage content={content} />
+            <MarkdownMessage content={content} className="mb-0 pb-0" />
           )}
           {streaming && role === "assistant" && (
             <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
           )}
         </div>
       </div>
-      {/* Timestamp and Copy button OUTSIDE the bubble, in a row */}
+      {/* Timestamp and Copy button OUTSIDE the bubble */}
       {(timestamp || true) && (
         <div
           className={cn(

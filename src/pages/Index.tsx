@@ -198,18 +198,21 @@ export default function Index() {
               onModelChange={activeChat ? (m:string) => handleUpdateChatModel(activeChat.id, m) : undefined}
               showModelSelect={!!activeChat}
             />
-            <ChatMessages
-              messages={activeChat?.messages || []}
-              streamingText={streamingText}
-              loading={loading}
-            />
-            <ChatInput
-              value={input}
-              onChange={setInput}
-              onSend={handleSendMessage}
-              disabled={loading}
-              loading={loading}
-            />
+            {/* Add a margin-top to visually separate header and chat */}
+            <div className="flex flex-col flex-1 mt-4 min-h-0">
+              <ChatMessages
+                messages={activeChat?.messages || []}
+                streamingText={streamingText}
+                loading={loading}
+              />
+              <ChatInput
+                value={input}
+                onChange={setInput}
+                onSend={handleSendMessage}
+                disabled={loading}
+                loading={loading}
+              />
+            </div>
           </div>
         </SidebarInset>
       </div>

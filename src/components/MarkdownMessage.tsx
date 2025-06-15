@@ -1,4 +1,3 @@
-
 import Prism from "prismjs";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-jsx";
@@ -100,15 +99,12 @@ export default function MarkdownMessage({ content, className }: MarkdownMessageP
     <div
       ref={ref}
       className={
-        // Remove any bottom margin (mb-0) and extra spacing at the bottom of prose
-        "prose prose-neutral max-w-none dark:prose-invert prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:leading-relaxed prose-pre:!p-0 prose-pre:!bg-transparent prose-pre:mb-0 prose-code:mb-0 mb-0 " +
+        "prose prose-neutral max-w-none dark:prose-invert prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:leading-relaxed prose-pre:!p-0 prose-pre:!bg-transparent prose-pre:mb-0 prose-code:mb-0 mb-0 pb-0 " +
         (className ?? "")
       }
-      // Remove bottom padding from the Markdown bubble
       style={{ marginBottom: 0, paddingBottom: 0 }}
       dangerouslySetInnerHTML={{ __html: marked.parse(content, { renderer }) }}
       tabIndex={0}
     />
   );
 }
-
