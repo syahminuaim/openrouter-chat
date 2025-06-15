@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,6 +96,36 @@ export default function ProjectManager({
         New Chat
       </Button>
 
+      {/* New Project Button */}
+      {showNewProject ? (
+        <div className="flex gap-2 px-2 mb-4">
+          <Input
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            placeholder="Project name"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCreateProject();
+              if (e.key === "Escape") setShowNewProject(false);
+            }}
+            autoFocus
+            className="h-8 text-sm"
+          />
+          <Button onClick={handleCreateProject} size="sm" className="h-8">
+            Add
+          </Button>
+        </div>
+      ) : (
+        <Button
+          onClick={() => setShowNewProject(true)}
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 mb-4"
+        >
+          <Plus size={16} />
+          New Project
+        </Button>
+      )}
+
       {/* Projects */}
       {projects.map((project) => {
         const projectChats = chats.filter(chat => chat.projectId === project.id);
@@ -115,9 +144,8 @@ export default function ProjectManager({
                 variant="ghost"
                 size="sm"
                 onClick={() => onToggleProject(project.id)}
-                className="flex-1 justify-start gap-1 px-2"
+                className="flex-1 justify-start gap-2 px-2"
               >
-                {project.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                 {project.expanded ? <FolderOpen size={16} /> : <Folder size={16} />}
                 <span className="truncate">{project.name}</span>
               </Button>
@@ -209,36 +237,6 @@ export default function ProjectManager({
             </ChatMenu>
           ))}
         </div>
-      )}
-
-      {/* New Project Button */}
-      {showNewProject ? (
-        <div className="flex gap-2 px-2">
-          <Input
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
-            placeholder="Project name"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleCreateProject();
-              if (e.key === "Escape") setShowNewProject(false);
-            }}
-            autoFocus
-            className="h-8 text-sm"
-          />
-          <Button onClick={handleCreateProject} size="sm" className="h-8">
-            Add
-          </Button>
-        </div>
-      ) : (
-        <Button
-          onClick={() => setShowNewProject(true)}
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2"
-        >
-          <Plus size={16} />
-          New Project
-        </Button>
       )}
     </div>
   );
