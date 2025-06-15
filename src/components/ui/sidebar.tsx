@@ -2,7 +2,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
-import { Minimize } from "lucide-react"
+import { Minimize, ArrowLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -264,24 +264,27 @@ const Sidebar = React.forwardRef<
 )
 Sidebar.displayName = "Sidebar"
 
-// Minimize button component
+// Minimize button component (improved styling and icon)
 const SidebarMinimizeButton = () => {
-  const { state, setOpen, toggleSidebar } = useSidebar()
+  const { state, toggleSidebar } = useSidebar()
 
   // Only show on desktop, and only if not collapsed
   return (
     <button
       type="button"
       className={cn(
-        "absolute left-2 top-2 z-20 rounded bg-muted text-muted-foreground hover:bg-accent p-1 transition-colors md:inline-block hidden",
+        "absolute left-3 top-3 z-20 flex items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg hover:bg-primary hover:text-primary-foreground transition-all md:inline-block hidden",
+        "w-10 h-10",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         "data-[state=collapsed]:hidden"
       )}
       aria-label="Minimize sidebar"
       onClick={() => toggleSidebar()}
       data-state={state}
       tabIndex={0}
+      style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.12)" }}
     >
-      <Minimize size={18} />
+      <ArrowLeft size={22} strokeWidth={2.5} />
     </button>
   )
 }
@@ -350,7 +353,7 @@ const SidebarInset = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background",
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       )}
       {...props}
