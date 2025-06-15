@@ -50,10 +50,11 @@ export default function Index() {
   const [folders, setFolders] = useState<Folder[]>(DEFAULT_FOLDERS);
   const [activeChatId, setActiveChatId] = useState<string>(DEFAULT_CHATS[0].id);
 
-  const chatFolders = folders.map(folder => ({
-    ...folder,
-    chats: chats.filter(c => c.folderId === folder.id).map(({ id, name }) => ({ id, name }))
-  }));
+  // Folders are currently not used in the sidebar!
+  // const chatFolders = folders.map(folder => ({
+  //   ...folder,
+  //   chats: chats.filter(c => c.folderId === folder.id).map(({ id, name }) => ({ id, name }))
+  // }));
   const uncategorizedChats = chats.filter(c => !c.folderId).map(({ id, name }) => ({ id, name }));
 
   const handleSelectChat = (chatId: string) => {
@@ -71,6 +72,7 @@ export default function Index() {
     setActiveChatId(newId);
   };
 
+  // Folders are not used, but we leave for possible future use
   const handleToggleFolder = (folderId: string) => {
     setFolders(folders =>
       folders.map(f =>
@@ -127,12 +129,10 @@ export default function Index() {
         {/* App Layout: Sidebar + Chat area */}
         <div className="flex w-full max-w-6xl flex-1 min-h-0">
           <AppSidebar
-            chatFolders={chatFolders}
             uncategorizedChats={uncategorizedChats}
             activeChatId={activeChatId}
             onSelectChat={handleSelectChat}
             onCreateChat={handleCreateChat}
-            onToggleFolder={handleToggleFolder}
             onRenameChat={handleRenameChat}
             onDeleteChat={handleDeleteChat}
           />
