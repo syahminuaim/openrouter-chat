@@ -13,13 +13,15 @@ type MarkdownMessageProps = {
   className?: string;
 };
 
+// Custom renderer for Prism highlighting
+const renderer = new marked.Renderer();
+renderer.code = (code, language) => {
+  const validLang = language && Prism.languages[language] ? language : "javascript";
+  const html = Prism.highlight(code, Prism.languages[validLang], validLang);
+  return `<pre style="position: relative;"><code class="language-${validLang}">${html}</code></pre>`;
+};
+
 marked.setOptions({
-  highlight: (code, lang) => {
-    if (lang && Prism.languages[lang]) {
-      return Prism.highlight(code, Prism.languages[lang], lang);
-    }
-    return Prism.highlight(code, Prism.languages.javascript, "javascript");
-  },
   breaks: true,
   gfm: true,
 });
@@ -27,11 +29,10 @@ marked.setOptions({
 export default function MarkdownMessage({ content, className }: MarkdownMessageProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // Highlight code after render
+  // Highlight code after render and add copy buttons
   useEffect(() => {
     if (!ref.current) return;
     Prism.highlightAllUnder(ref.current);
-    // Add copy buttons to all code blocks
     ref.current.querySelectorAll<HTMLElement>("pre").forEach(pre => {
       if (pre.querySelector(".copy-btn")) return; // Don't double-insert
       const button = document.createElement("button");
@@ -56,7 +57,8 @@ export default function MarkdownMessage({ content, className }: MarkdownMessageP
     <div
       ref={ref}
       className={"prose prose-neutral max-w-none dark:prose-invert mt-1 " + (className ?? "")}
-      dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
+      // Use custom renderer
+      dangerouslySetInnerHTML={{ __html: marked.parse(content, { renderer }) }}
       tabIndex={0}
     />
   );

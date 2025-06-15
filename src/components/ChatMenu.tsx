@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   ContextMenu,
@@ -114,11 +113,11 @@ export function ChatMenu({
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                variant="destructive"
                 onClick={() => {
                   onDelete();
                   setDeleteDialogOpen(false);
                 }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete
               </AlertDialogAction>
@@ -129,4 +128,3 @@ export function ChatMenu({
     </ContextMenu>
   );
 }
-
