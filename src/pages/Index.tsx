@@ -1,163 +1,428 @@
 
-import { useState } from "react";
-import { AppSidebar } from "@/components/AppSidebar";
-import Chat from "@/components/Chat";
-import { SidebarInset, SidebarTrigger, SidebarProvider } from "@/components/ui/sidebar";
+import { useState, useEffect } from "react";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Send, Loader2, Menu } from "lucide-react";
+import MessageBubble from "@/components/MessageBubble";
+import ProjectManager from "@/components/ProjectManager";
+import Settings from "@/components/Settings";
+import { fetchOpenRouterChat, OpenRouterMessage } from "@/lib/openrouter";
+import { useToast } from "@/hooks/use-toast";
 
-type ChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
-
-type Chat = {
+interface Project {
   id: string;
   name: string;
-  folderId?: string;
-  messages: ChatMessage[];
-  model?: string;
-};
+  expanded: boolean;
+}
 
-type Folder = {
+interface Chat {
   id: string;
   name: string;
-  open: boolean;
-};
+  projectId?: string;
+  messages: OpenRouterMessage[];
+  timestamp: Date;
+}
 
-function uuid() {
+function generateId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-const DEFAULT_CHATS: Chat[] = [
-  {
-    id: "chat-1",
-    name: "Welcome",
-    messages: [
-      {
-        role: "assistant",
-        content: "Welcome! Start a new chat or pick an existing one from the sidebar."
-      }
-    ]
+// Load data from localStorage
+function loadFromStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : defaultValue;
+  } catch {
+    return defaultValue;
   }
-];
+}
 
-const DEFAULT_FOLDERS: Folder[] = [
-  { id: "folder-1", name: "Work", open: true },
-  { id: "folder-2", name: "Personal", open: false }
-];
+// Save data to localStorage
+function saveToStorage<T>(key: string, value: T) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error("Failed to save to localStorage:", error);
+  }
+}
 
 export default function Index() {
-  const [chats, setChats] = useState<Chat[]>(DEFAULT_CHATS);
-  const [folders, setFolders] = useState<Folder[]>(DEFAULT_FOLDERS);
-  const [activeChatId, setActiveChatId] = useState<string>(DEFAULT_CHATS[0].id);
+  // Core state
+  const [projects, setProjects] = useState<Project[]>(() => 
+    loadFromStorage("chatgpt-projects", [])
+  );
+  const [chats, setChats] = useState<Chat[]>(() => 
+    loadFromStorage("chatgpt-chats", [])
+  );
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  
+  // Settings state
+  const [apiKey, setApiKey] = useState<string | null>(() => 
+    localStorage.getItem("openrouter-api-key")
+  );
+  const [model, setModel] = useState<string>(() => 
+    localStorage.getItem("selected-model") || "gpt-4.1-2025-04-14"
+  );
+  const [theme, setTheme] = useState<"light" | "dark">(() => 
+    (localStorage.getItem("theme") as "light" | "dark") || "light"
+  );
+  
+  // Chat state
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [streamingText, setStreamingText] = useState<string | null>(null);
+  
+  const { toast } = useToast();
 
-  // Folders are currently not used in the sidebar!
-  // const chatFolders = folders.map(folder => ({
-  //   ...folder,
-  //   chats: chats.filter(c => c.folderId === folder.id).map(({ id, name }) => ({ id, name }))
-  // }));
-  const uncategorizedChats = chats.filter(c => !c.folderId).map(({ id, name }) => ({ id, name }));
+  // Apply theme
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // Save data to localStorage when state changes
+  useEffect(() => {
+    saveToStorage("chatgpt-projects", projects);
+  }, [projects]);
+
+  useEffect(() => {
+    saveToStorage("chatgpt-chats", chats);
+  }, [chats]);
+
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem("openrouter-api-key", apiKey);
+    }
+  }, [apiKey]);
+
+  useEffect(() => {
+    localStorage.setItem("selected-model", model);
+  }, [model]);
+
+  const activeChat = chats.find(c => c.id === activeChatId);
+
+  // Project management
+  const handleCreateProject = (name: string) => {
+    const newProject: Project = {
+      id: generateId(),
+      name,
+      expanded: true,
+    };
+    setProjects(prev => [...prev, newProject]);
+  };
+
+  const handleToggleProject = (projectId: string) => {
+    setProjects(prev =>
+      prev.map(p =>
+        p.id === projectId ? { ...p, expanded: !p.expanded } : p
+      )
+    );
+  };
+
+  const handleRenameProject = (projectId: string, newName: string) => {
+    setProjects(prev =>
+      prev.map(p =>
+        p.id === projectId ? { ...p, name: newName } : p
+      )
+    );
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    setProjects(prev => prev.filter(p => p.id !== projectId));
+    // Also remove project reference from chats
+    setChats(prev =>
+      prev.map(chat =>
+        chat.projectId === projectId ? { ...chat, projectId: undefined } : chat
+      )
+    );
+  };
+
+  // Chat management
+  const handleCreateChat = (projectId?: string) => {
+    const newChat: Chat = {
+      id: generateId(),
+      name: "New Chat",
+      projectId,
+      messages: [],
+      timestamp: new Date(),
+    };
+    setChats(prev => [newChat, ...prev]);
+    setActiveChatId(newChat.id);
+  };
 
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
   };
 
-  const handleCreateChat = () => {
-    const newId = uuid();
-    const newChat: Chat = {
-      id: newId,
-      name: "New Chat",
-      messages: [],
-    };
-    setChats([newChat, ...chats]);
-    setActiveChatId(newId);
-  };
-
-  // Folders are not used, but we leave for possible future use
-  const handleToggleFolder = (folderId: string) => {
-    setFolders(folders =>
-      folders.map(f =>
-        f.id === folderId ? { ...f, open: !f.open } : f
-      )
-    );
-  };
-
-  const handleAppendMessage = (chatId: string, message: ChatMessage) => {
-    setChats(chats =>
-      chats.map(chat =>
-        chat.id === chatId
-          ? { ...chat, messages: [...chat.messages, message] }
-          : chat
-      )
-    );
-  };
-
   const handleRenameChat = (chatId: string, newName: string) => {
-    setChats(cs =>
-      cs.map(chat =>
+    setChats(prev =>
+      prev.map(chat =>
         chat.id === chatId ? { ...chat, name: newName } : chat
       )
     );
   };
 
   const handleDeleteChat = (chatId: string) => {
-    setChats(cs => cs.filter(chat => chat.id !== chatId));
-    setTimeout(() => {
-      setActiveChatId(cs => {
-        if (chats.find(c => c.id === chatId)) {
-          const remaining = chats.filter(c => c.id !== chatId);
-          return remaining.length > 0 ? remaining[0].id : "";
-        }
-        return cs;
-      });
-    }, 0);
+    setChats(prev => prev.filter(chat => chat.id !== chatId));
+    if (activeChatId === chatId) {
+      const remainingChats = chats.filter(chat => chat.id !== chatId);
+      setActiveChatId(remainingChats.length > 0 ? remainingChats[0].id : null);
+    }
   };
 
-  const activeChat = chats.find(c => c.id === activeChatId);
+  // Message handling
+  const handleSendMessage = async () => {
+    if (!input.trim() || loading || !apiKey) {
+      if (!apiKey) {
+        toast({
+          title: "API Key Required",
+          description: "Please set your OpenRouter API key in settings.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    const messageContent = input.trim();
+    setInput("");
+    setLoading(true);
+
+    // Create or update chat
+    let targetChatId = activeChatId;
+    if (!targetChatId) {
+      const newChat: Chat = {
+        id: generateId(),
+        name: messageContent.slice(0, 50) + (messageContent.length > 50 ? "..." : ""),
+        messages: [],
+        timestamp: new Date(),
+      };
+      setChats(prev => [newChat, ...prev]);
+      targetChatId = newChat.id;
+      setActiveChatId(targetChatId);
+    }
+
+    // Add user message
+    const userMessage: OpenRouterMessage = { role: "user", content: messageContent };
+    setChats(prev =>
+      prev.map(chat =>
+        chat.id === targetChatId
+          ? {
+              ...chat,
+              messages: [...chat.messages, userMessage],
+              name: chat.messages.length === 0 
+                ? messageContent.slice(0, 50) + (messageContent.length > 50 ? "..." : "")
+                : chat.name,
+              timestamp: new Date(),
+            }
+          : chat
+      )
+    );
+
+    try {
+      // Get updated messages for API call
+      const updatedChat = chats.find(c => c.id === targetChatId);
+      const messages = updatedChat ? [...updatedChat.messages, userMessage] : [userMessage];
+      
+      const response = await fetchOpenRouterChat(apiKey, messages, model);
+      
+      // Simulate streaming effect
+      setStreamingText("");
+      const words = response.split(" ");
+      for (let i = 0; i < words.length; i++) {
+        const partial = words.slice(0, i + 1).join(" ");
+        setStreamingText(partial);
+        await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 70));
+      }
+      
+      setStreamingText(null);
+      
+      // Add assistant message
+      const assistantMessage: OpenRouterMessage = { role: "assistant", content: response };
+      setChats(prev =>
+        prev.map(chat =>
+          chat.id === targetChatId
+            ? {
+                ...chat,
+                messages: [...chat.messages, userMessage, assistantMessage],
+                timestamp: new Date(),
+              }
+            : chat
+        )
+      );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to get response from AI model.",
+        variant: "destructive",
+      });
+      
+      const errorMessage: OpenRouterMessage = {
+        role: "assistant",
+        content: "Sorry, I encountered an error while processing your request.",
+      };
+      setChats(prev =>
+        prev.map(chat =>
+          chat.id === targetChatId
+            ? {
+                ...chat,
+                messages: [...chat.messages, userMessage, errorMessage],
+                timestamp: new Date(),
+              }
+            : chat
+        )
+      );
+    } finally {
+      setLoading(false);
+      setStreamingText(null);
+    }
+  };
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/80 flex flex-col items-center justify-start pb-12 w-full">
-        <header className="w-full flex flex-col items-center mt-12 mb-4">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-2">
-            OpenRouter Chat
-          </h1>
-          <p className="text-lg text-muted-foreground font-medium max-w-xl text-center">
-            Chat with your favorite Large Language Models using your OpenRouter API key.<br />
-            <span className="text-sm">Your key is stored locally and never leaves your computer.</span>
-          </p>
-        </header>
-        {/* App Layout: Sidebar + Chat area */}
-        <div className="flex w-full max-w-6xl flex-1 min-h-0">
-          <AppSidebar
-            uncategorizedChats={uncategorizedChats}
-            activeChatId={activeChatId}
-            onSelectChat={handleSelectChat}
-            onCreateChat={handleCreateChat}
-            onRenameChat={handleRenameChat}
-            onDeleteChat={handleDeleteChat}
-          />
-          <SidebarInset>
-            <div className="flex items-center justify-between p-2">
-              <SidebarTrigger />
-            </div>
-            {activeChat ? (
-              <Chat
-                chatKey={activeChat.id}
-                initialMessages={activeChat.messages}
-                onSendMessage={msg => handleAppendMessage(activeChat.id, msg)}
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Sidebar */}
+        <Sidebar className="border-r">
+          <SidebarHeader className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-lg">ChatGPT</h2>
+              <Settings
+                apiKey={apiKey}
+                onApiKeyChange={setApiKey}
+                model={model}
+                onModelChange={setModel}
+                theme={theme}
+                onThemeChange={setTheme}
               />
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground text-2xl">
-                Select a chat to begin
+            </div>
+          </SidebarHeader>
+          
+          <SidebarContent className="p-4">
+            <ProjectManager
+              projects={projects}
+              chats={chats}
+              activeChatId={activeChatId}
+              onCreateProject={handleCreateProject}
+              onToggleProject={handleToggleProject}
+              onRenameProject={handleRenameProject}
+              onDeleteProject={handleDeleteProject}
+              onSelectChat={handleSelectChat}
+              onCreateChat={handleCreateChat}
+              onRenameChat={handleRenameChat}
+              onDeleteChat={handleDeleteChat}
+            />
+          </SidebarContent>
+          
+          <SidebarFooter className="p-4 border-t">
+            <div className="text-xs text-muted-foreground">
+              Powered by OpenRouter
+            </div>
+          </SidebarFooter>
+        </Sidebar>
+
+        {/* Main Content */}
+        <SidebarInset className="flex-1">
+          <div className="flex flex-col h-screen">
+            {/* Header */}
+            <header className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger />
+                <h1 className="font-semibold">
+                  {activeChat?.name || "New Chat"}
+                </h1>
               </div>
-            )}
-          </SidebarInset>
-        </div>
-        <footer className="mt-8 text-muted-foreground text-xs text-center opacity-70">
-          <p>
-            Not affiliated with OpenRouter, OpenAI, or ChatGPT. | Powered by <a href="https://openrouter.ai/" className="underline hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">OpenRouter</a>
-          </p>
-        </footer>
+              <div className="text-sm text-muted-foreground">
+                {model.split("/").pop()?.split("-")[0]?.toUpperCase() || "GPT"}
+              </div>
+            </header>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto">
+              {!activeChat || activeChat.messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center space-y-4 max-w-md">
+                    <h2 className="text-2xl font-bold">How can I help you today?</h2>
+                    <p className="text-muted-foreground">
+                      Start a conversation with AI assistant
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {activeChat.messages.map((message, index) => (
+                    <MessageBubble
+                      key={index}
+                      role={message.role}
+                      content={message.content}
+                      timestamp={new Date()}
+                    />
+                  ))}
+                  {streamingText && (
+                    <MessageBubble
+                      role="assistant"
+                      content={streamingText}
+                      streaming={true}
+                    />
+                  )}
+                  {loading && !streamingText && (
+                    <div className="flex gap-4 px-4 py-6">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-muted-foreground mb-2">Assistant</div>
+                        <div className="text-muted-foreground">Thinking...</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Input */}
+            <div className="border-t bg-background p-4">
+              <div className="max-w-4xl mx-auto">
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 relative">
+                    <Input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      placeholder="Message ChatGPT..."
+                      className="pr-12 resize-none border-2 focus:border-primary/50"
+                      disabled={loading}
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!input.trim() || loading}
+                      size="sm"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                    >
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-2 text-center">
+                  ChatGPT can make mistakes. Consider checking important information.
+                </div>
+              </div>
+            </div>
+          </div>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );
