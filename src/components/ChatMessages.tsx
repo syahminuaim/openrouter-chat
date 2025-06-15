@@ -1,6 +1,5 @@
 
 import MessageBubble from "@/components/MessageBubble";
-import { Loader2 } from "lucide-react";
 import { OpenRouterMessage } from "@/lib/openrouter";
 
 interface ChatMessagesProps {
@@ -28,17 +27,6 @@ export default function ChatMessages({ messages, streamingText, loading }: ChatM
           ))}
           {streamingText && (
             <MessageBubble role="assistant" content={streamingText} streaming={true} />
-          )}
-          {loading && !streamingText && (
-            <div className="flex gap-4 px-4 py-6">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                <Loader2 className="w-4 h-4 text-white animate-spin" />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-muted-foreground mb-2">Assistant</div>
-                <div className="text-muted-foreground">Thinking...</div>
-              </div>
-            </div>
           )}
         </div>
       )}
