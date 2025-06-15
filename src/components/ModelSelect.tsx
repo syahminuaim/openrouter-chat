@@ -61,17 +61,13 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
             ) : undefined}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[300px] w-[400px] overflow-hidden">
-          <div className="flex flex-col h-full">
-            <div className="flex-shrink-0 sticky top-0 z-50 bg-popover border-b border-border">
-              <ModelSearch value={search} onChange={setSearch} />
-            </div>
-            <div className="flex-1 overflow-y-auto max-h-[250px] scrollbar-hide">
-              <ModelList 
-                groupedModels={groupedModels} 
-                filteredModelsLength={filteredModels.length}
-              />
-            </div>
+        <SelectContent className="max-h-[300px] w-[400px] p-0">
+          <ModelSearch value={search} onChange={setSearch} />
+          <div className="max-h-[250px] overflow-y-auto">
+            <ModelList 
+              groupedModels={groupedModels} 
+              filteredModelsLength={filteredModels.length}
+            />
           </div>
         </SelectContent>
       </Select>
