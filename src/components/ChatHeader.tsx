@@ -20,15 +20,16 @@ export default function ChatHeader({ chatName, model, onModelChange, showModelSe
         </h1>
       </div>
       <div className="flex items-center gap-4">
-        {showModelSelect && onModelChange && (
+        {showModelSelect && onModelChange ? (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Model:</span>
             <ModelSelect value={model} onChange={onModelChange} compact={true} />
           </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            {model.split("/").pop()?.split("-")[0]?.toUpperCase() || "MODEL"}
+          </div>
         )}
-        <div className="text-sm text-muted-foreground">
-          {model.split("/").pop()?.split("-")[0]?.toUpperCase() || "MODEL"}
-        </div>
       </div>
     </header>
   );
