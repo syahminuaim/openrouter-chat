@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";
@@ -22,6 +23,7 @@ export default function ChatInput({
       <div className="max-w-4xl mx-auto">
         <div className="flex gap-3 items-end">
           <div className="flex-1 relative">
+            {/* Custom input styling: remove intrusive borders on focus/click */}
             <Input
               value={value}
               onChange={e => onChange(e.target.value)}
@@ -32,7 +34,10 @@ export default function ChatInput({
                 }
               }}
               placeholder="Message Assistant..."
-              className="pr-12 resize-none border-2"
+              className="pr-12 resize-none border border-zinc-300 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-300 focus:outline-none"
+              style={{
+                boxShadow: "none" // Remove native focus border
+              }}
               disabled={disabled}
             />
             <Button
@@ -50,3 +55,4 @@ export default function ChatInput({
     </div>
   );
 }
+
