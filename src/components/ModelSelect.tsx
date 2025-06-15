@@ -54,12 +54,16 @@ export default function ModelSelect({ value, onChange, compact = false }: ModelS
           `}
         >
           <SelectValue placeholder="Select a model">
-            {compact && selectedModel ? selectedModel.label : undefined}
+            {compact && selectedModel ? (
+              <span className="text-sm text-muted-foreground">
+                {selectedModel.value.split("/").pop()?.split("-")[0]?.toUpperCase() || "MODEL"}
+              </span>
+            ) : undefined}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[350px] w-[400px] p-0">
+        <SelectContent className="max-h-[250px] w-[400px] p-0">
           <ModelSearch value={search} onChange={setSearch} />
-          <div className="max-h-[300px] overflow-y-auto">
+          <div className="max-h-[200px] overflow-y-auto">
             <ModelList 
               groupedModels={groupedModels} 
               filteredModelsLength={filteredModels.length}
