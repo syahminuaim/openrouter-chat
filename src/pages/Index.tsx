@@ -10,7 +10,6 @@ import Settings from "@/components/Settings";
 import ModelSelect from "@/components/ModelSelect";
 import { fetchOpenRouterChat, OpenRouterMessage } from "@/lib/openrouter";
 import { useToast } from "@/hooks/use-toast";
-
 interface Project {
   id: string;
   name: string;
@@ -24,7 +23,6 @@ interface Chat {
   timestamp: Date;
   model?: string; // Add model field to Chat interface
 }
-
 function generateId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
@@ -47,7 +45,6 @@ function saveToStorage<T>(key: string, value: T) {
     console.error("Failed to save to localStorage:", error);
   }
 }
-
 export default function Index() {
   // Core state
   const [projects, setProjects] = useState<Project[]>(() => loadFromStorage("chatgpt-projects", []));
@@ -92,7 +89,6 @@ export default function Index() {
   useEffect(() => {
     localStorage.setItem("selected-model", defaultModel);
   }, [defaultModel]);
-  
   const activeChat = chats.find(c => c.id === activeChatId);
   const currentModel = activeChat?.model || defaultModel;
 
@@ -164,21 +160,19 @@ export default function Index() {
 
   // New function to move chat to project
   const handleMoveChatToProject = (chatId: string, projectId?: string) => {
-    setChats(prev => prev.map(chat => 
-      chat.id === chatId 
-        ? { ...chat, projectId } 
-        : chat
-    ));
+    setChats(prev => prev.map(chat => chat.id === chatId ? {
+      ...chat,
+      projectId
+    } : chat));
   };
 
   // New function to update chat model
   const handleUpdateChatModel = (model: string) => {
     if (activeChatId) {
-      setChats(prev => prev.map(chat => 
-        chat.id === activeChatId 
-          ? { ...chat, model } 
-          : chat
-      ));
+      setChats(prev => prev.map(chat => chat.id === activeChatId ? {
+        ...chat,
+        model
+      } : chat));
     }
   };
 
@@ -271,33 +265,19 @@ export default function Index() {
       setStreamingText(null);
     }
   };
-
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
         <Sidebar className="border-r">
           <SidebarHeader className="p-4 border-b">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-lg">ChatGPT</h2>
+              <h2 className="font-semibold text-lg">XXX</h2>
               <Settings apiKey={apiKey} onApiKeyChange={setApiKey} model={defaultModel} onModelChange={setDefaultModel} theme={theme} onThemeChange={setTheme} />
             </div>
           </SidebarHeader>
           
           <SidebarContent className="p-4">
-            <ProjectManager 
-              projects={projects} 
-              chats={chats} 
-              activeChatId={activeChatId} 
-              onCreateProject={handleCreateProject} 
-              onToggleProject={handleToggleProject} 
-              onRenameProject={handleRenameProject} 
-              onDeleteProject={handleDeleteProject} 
-              onSelectChat={handleSelectChat} 
-              onCreateChat={handleCreateChat} 
-              onRenameChat={handleRenameChat} 
-              onDeleteChat={handleDeleteChat}
-              onMoveChatToProject={handleMoveChatToProject}
-            />
+            <ProjectManager projects={projects} chats={chats} activeChatId={activeChatId} onCreateProject={handleCreateProject} onToggleProject={handleToggleProject} onRenameProject={handleRenameProject} onDeleteProject={handleDeleteProject} onSelectChat={handleSelectChat} onCreateChat={handleCreateChat} onRenameChat={handleRenameChat} onDeleteChat={handleDeleteChat} onMoveChatToProject={handleMoveChatToProject} />
           </SidebarContent>
           
           <SidebarFooter className="p-4 border-t">
@@ -317,16 +297,10 @@ export default function Index() {
                 </h1>
               </div>
               <div className="flex items-center gap-4">
-                {activeChat && (
-                  <div className="flex items-center gap-2">
+                {activeChat && <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Model:</span>
-                    <ModelSelect 
-                      value={currentModel} 
-                      onChange={handleUpdateChatModel}
-                      compact={true}
-                    />
-                  </div>
-                )}
+                    <ModelSelect value={currentModel} onChange={handleUpdateChatModel} compact={true} />
+                  </div>}
                 <div className="text-sm text-muted-foreground">
                   {currentModel.split("/").pop()?.split("-")[0]?.toUpperCase() || "GPT"}
                 </div>
