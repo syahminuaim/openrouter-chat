@@ -2,6 +2,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import { Minimize } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -173,7 +174,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
 
     if (collapsible === "none") {
       return (
@@ -185,6 +186,8 @@ const Sidebar = React.forwardRef<
           ref={ref}
           {...props}
         >
+          {/* Minimize button for desktop */}
+          <SidebarMinimizeButton />
           {children}
         </div>
       )
@@ -219,6 +222,8 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
+        {/* Sidebar minimize button (desktop only, top of sidebar) */}
+        <SidebarMinimizeButton />
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
@@ -248,6 +253,8 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
+            {/* Minimize button floats to the top, only for desktop */}
+            <SidebarMinimizeButton />
             {children}
           </div>
         </div>
@@ -256,6 +263,28 @@ const Sidebar = React.forwardRef<
   }
 )
 Sidebar.displayName = "Sidebar"
+
+// Minimize button component
+const SidebarMinimizeButton = () => {
+  const { state, setOpen, toggleSidebar } = useSidebar()
+
+  // Only show on desktop, and only if not collapsed
+  return (
+    <button
+      type="button"
+      className={cn(
+        "absolute left-2 top-2 z-20 rounded bg-muted text-muted-foreground hover:bg-accent p-1 transition-colors md:inline-block hidden",
+        "data-[state=collapsed]:hidden"
+      )}
+      aria-label="Minimize sidebar"
+      onClick={() => toggleSidebar()}
+      data-state={state}
+      tabIndex={0}
+    >
+      <Minimize size={18} />
+    </button>
+  )
+}
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
