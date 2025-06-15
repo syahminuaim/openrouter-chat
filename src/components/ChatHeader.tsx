@@ -27,7 +27,7 @@ export default function ChatHeader({ chatName, model, onModelChange, showModelSe
           </div>
         )}
         <div className="text-sm text-muted-foreground">
-          {model.split("/").pop()?.split("-")[0]?.toUpperCase() || "GPT"}
+          {model.split("/").pop()?.split("-")[0]?.toUpperCase() || "MODEL"}
         </div>
       </div>
     </header>

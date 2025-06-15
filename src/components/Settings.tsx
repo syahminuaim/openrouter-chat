@@ -59,7 +59,9 @@ export default function Settings({
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Default Model (for new chats)</label>
+            <label className="text-sm font-medium">
+              Default Model (for new chats) - Current: {model.split("/").pop()?.split("-")[0]?.toUpperCase() || "MODEL"}
+            </label>
             <ModelSelect value={model} onChange={onModelChange} />
           </div>
 
