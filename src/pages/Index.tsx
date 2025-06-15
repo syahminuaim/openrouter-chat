@@ -251,9 +251,7 @@ export default function Index() {
           </SidebarContent>
           
           <SidebarFooter className="p-4 border-t">
-            <div className="text-xs text-muted-foreground">
-              Powered by OpenRouter
-            </div>
+            <div className="text-xs text-muted-foreground">Powered by Dato Zubair</div>
           </SidebarFooter>
         </Sidebar>
 
